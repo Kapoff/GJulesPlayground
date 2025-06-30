@@ -278,62 +278,76 @@ section:last-child {
 /* New styles for currentMealList items */
 #currentMealList li.meal-item-row {
     display: flex;
-    align-items: center;
-    padding: 8px 10px;
+    align-items: center; /* Vertically align items in the row */
+    padding: 8px 5px;  /* Reduced horizontal padding for more content space */
     border-bottom: 1px solid #f0f0f0;
-    min-height: 38px;
+    min-height: 40px;
 }
 #currentMealList li.meal-item-row:last-child {
     border-bottom: none;
 }
 
-.meal-item-left {
+/* Contains Name + Weight Input + Unit */
+.meal-item-left-group {
     display: flex;
     align-items: center;
-    flex-shrink: 0; /* Prevent this section from shrinking disproportionately */
-    margin-right: 10px; /* Space between this group and the macros */
+    flex-shrink: 0; /* Prevent this group from shrinking too much */
+    /* Takes specific width, name inside will flex */
+    flex-basis: 280px; /* Adjust as needed, approx for Name + Weight + Unit */
+    min-width: 220px; /* Ensure it doesn't get too small */
 }
 
 .meal-item-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 180px;  /* Adjust as needed, can be a bit more generous */
-    min-width: 80px;
+    flex-grow: 1; /* Allow name to take available space within left-group */
+    min-width: 50px; /* Prevent name from disappearing completely */
     margin-right: 8px;
-    line-height: 1.4;
-    font-weight: 500; /* Slightly bolder name */
+    line-height: 1.5;
+    font-weight: 500;
 }
 
 .editable-weight-input {
-    width: 60px;
-    padding: 5px;
+    width: 60px; /* Fixed width for weight input */
+    padding: 6px;
     text-align: right;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9em;
-    margin-right: 3px;
+    margin-right: 2px; /* Small space before unit */
+    flex-shrink: 0; /* Don't shrink weight input */
 }
 
 .meal-item-unit {
-    font-size: 0.85em;
+    font-size: 0.9em;
     color: #555;
-    /* margin-right is handled by meal-item-left's margin now */
+    margin-right: 10px; /* Space after 'g' before macros start */
+    flex-shrink: 0;
 }
 
+/* Contains all individual macro spans */
 .meal-item-macros {
-    flex-grow: 1; /* This will take up the available space */
+    flex-grow: 1; /* Allow macros section to take remaining space */
     display: flex;
     align-items: center;
     font-size: 0.85em;
     color: #333;
-    overflow: hidden;
+    overflow: hidden; /* Hide if too many macros for space */
     white-space: nowrap;
     padding: 0 5px;
+    justify-content: flex-start; /* Align macro items to the start of their container */
 }
 
-.meal-item-macros span {
-    margin-right: 12px; /* More spacing between individual macro values */
+.meal-item-macros span { /* Individual macro (e.g., kcal: 100) */
+    min-width: 80px;   /* Give each macro item a min-width for column effect */
+    flex-basis: 90px;  /* Base width for each macro column */
+    flex-shrink: 0;    /* Prevent shrinking for consistent columns */
+    margin-right: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Ellipsis if individual macro text is too long */
+    text-align: left;  /* Align text to left within each macro span */
 }
 .meal-item-macros span:last-child {
     margin-right: 0;
@@ -346,13 +360,13 @@ section:last-child {
     background-color: transparent;
     color: #cc0000;
     border: none;
-    border-radius: 50%; /* Circular button */
-    width: 28px;       /* Fixed width */
-    height: 28px;      /* Fixed height */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
     font-size: 1.2em;
     font-weight: bold;
     cursor: pointer;
-    margin-left: 10px; /* Space from macros */
+    margin-left: auto; /* Push to the far right, after macros */
     flex-shrink: 0;
     display: flex;
     align-items: center;
