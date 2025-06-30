@@ -49,9 +49,43 @@
             <button type="submit">Save Ingredient</button>
         </form>
         <div id="statusMessage" class="status-message"></div>
+
+        <div class="shutdown-container" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ccc;">
+            <p>If you are running this application using the launch script, you can shut down the web server here.</p>
+            <button id="shutdownServerBtn">Shutdown Server</button>
+            <div id="shutdownMessage" class="status-message" style="margin-top: 10px;"></div>
+        </div>
     </div>
 
     <script>
+        // Shutdown server button event listener
+        const shutdownBtn = document.getElementById('shutdownServerBtn');
+        if (shutdownBtn) {
+            shutdownBtn.addEventListener('click', async function() {
+                const shutdownMessageEl = document.getElementById('shutdownMessage');
+                shutdownMessageEl.textContent = 'Attempting to shut down server...';
+                shutdownMessageEl.className = 'status-message info';
+                try {
+                    const response = await fetch('/shutdown-server');
+                    const result = await response.text(); // Get text response
+                    shutdownMessageEl.textContent = result;
+                    if (response.ok) {
+                        shutdownMessageEl.classList.add('success');
+                        // Optionally disable the button
+                        shutdownBtn.disabled = true;
+                        // Try to close the window, may not work depending on browser settings
+                        // setTimeout(() => window.close(), 3000);
+                    } else {
+                        shutdownMessageEl.classList.add('error');
+                    }
+                } catch (error) {
+                    console.error('Error shutting down server:', error);
+                    shutdownMessageEl.textContent = 'Failed to send shutdown command. The server might already be down or unreachable.';
+                    shutdownMessageEl.classList.add('error');
+                }
+            });
+        }
+
         document.getElementById('addIngredientForm').addEventListener('submit', async function(event) {
             event.preventDefault(); // Prevent default form submission
 
