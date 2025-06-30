@@ -276,93 +276,97 @@ section:last-child {
 }
 
 /* New styles for currentMealList items */
-#currentMealList li.meal-item-row { /* Make selector more specific if needed */
+#currentMealList li.meal-item-row {
     display: flex;
     align-items: center;
-    padding: 10px 12px; /* Increased padding for better spacing */
+    padding: 8px 10px;
     border-bottom: 1px solid #f0f0f0;
-    min-height: 40px; /* Ensure consistent row height */
+    min-height: 38px;
 }
-#currentMealList li.meal-item-row:last-child { /* Corrected selector */
+#currentMealList li.meal-item-row:last-child {
     border-bottom: none;
 }
 
 .meal-item-left {
     display: flex;
     align-items: center;
-    flex-grow: 0; /* Don't grow, fixed size area for name/weight */
-    flex-shrink: 0;
-    padding-right: 10px;
+    flex-shrink: 0; /* Prevent this section from shrinking disproportionately */
+    margin-right: 10px; /* Space between this group and the macros */
 }
 
 .meal-item-name {
-    display: inline-block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px; /* Adjust as needed, or use flex basis on parent */
-    margin-right: 5px;
-    vertical-align: middle;
+    max-width: 180px;  /* Adjust as needed, can be a bit more generous */
+    min-width: 80px;
+    margin-right: 8px;
+    line-height: 1.4;
+    font-weight: 500; /* Slightly bolder name */
 }
 
-.editable-weight-input { /* Renamed from #currentMealList li .editable-weight-input */
-    width: 65px;
-    padding: 4px 6px;
+.editable-weight-input {
+    width: 60px;
+    padding: 5px;
     text-align: right;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 0.95em;
+    font-size: 0.9em;
     margin-right: 3px;
-    vertical-align: middle;
 }
 
 .meal-item-unit {
-    font-size: 0.9em;
+    font-size: 0.85em;
     color: #555;
-    margin-right: 10px; /* Space before macros */
-    vertical-align: middle;
+    /* margin-right is handled by meal-item-left's margin now */
 }
 
 .meal-item-macros {
-    flex-grow: 1; /* Takes up available space */
+    flex-grow: 1; /* This will take up the available space */
     display: flex;
     align-items: center;
     font-size: 0.85em;
-    color: #444;
+    color: #333;
+    overflow: hidden;
     white-space: nowrap;
-    overflow: hidden; /* In case macro string gets too long */
-    text-overflow: ellipsis;
+    padding: 0 5px;
 }
 
 .meal-item-macros span {
-    margin-right: 8px; /* Spacing between macro values */
+    margin-right: 12px; /* More spacing between individual macro values */
 }
-.meal-item-macros span:empty { /* Hide if no macro data yet */
+.meal-item-macros span:last-child {
+    margin-right: 0;
+}
+.meal-item-macros span:empty {
     display: none;
 }
 
-
 .meal-item-remove-btn {
     background-color: transparent;
-    color: #e74c3c;
+    color: #cc0000;
     border: none;
-    border-radius: 4px;
-    padding: 5px 8px;
-    font-size: 1.2em; /* Larger X */
+    border-radius: 50%; /* Circular button */
+    width: 28px;       /* Fixed width */
+    height: 28px;      /* Fixed height */
+    font-size: 1.2em;
     font-weight: bold;
     cursor: pointer;
-    margin-left: auto; /* Pushes it to the far right */
-    flex-shrink: 0; /* Don't shrink */
-    line-height: 1; /* Ensure X is centered well */
+    margin-left: 10px; /* Space from macros */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .meal-item-remove-btn:hover {
-    background-color: #fdecea; /* Light red background on hover */
-    color: #c0392b;
+    background-color: #e74c3c;
+    color: white;
 }
 
-
-#currentMealList li:empty { /* Style for the "No ingredients" message */
+#currentMealList li:empty {
     justify-content: center;
     color: #777;
     font-style: italic;
