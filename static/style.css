@@ -350,3 +350,53 @@ section:last-child {
         padding: 8px 10px;
     }
 }
+
+/* Global Shutdown Button */
+.global-shutdown-button {
+    position: fixed; /* Fixed position relative to the viewport */
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background-color: #e74c3c; /* Red */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Circular button */
+    font-size: 20px; /* Size of the 'X' icon */
+    font-weight: bold;
+    line-height: 40px; /* Center the 'X' vertically */
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000; /* Ensure it's on top of other elements */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.global-shutdown-button:hover {
+    background-color: #c0392b; /* Darker red on hover */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+.global-shutdown-button .tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position above the button */
+    left: 50%;
+    margin-left: -60px; /* Use half of the width to center the tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px; /* Smaller font for tooltip */
+    line-height: normal; /* Reset line-height for tooltip text */
+}
+
+.global-shutdown-button:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}

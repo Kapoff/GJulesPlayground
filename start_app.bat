@@ -2,6 +2,7 @@
 
 REM Get the directory where the script is located
 set "SCRIPT_DIR=%~dp0"
+set "URL=http://127.0.0.1:5000/"
 
 REM Activate virtual environment
 if exist "%SCRIPT_DIR%venv\Scripts\activate.bat" (
@@ -12,26 +13,28 @@ if exist "%SCRIPT_DIR%venv\Scripts\activate.bat" (
     exit /b 1
 )
 
-echo Starting Flask web server (for adding ingredients)...
-REM Start Flask app in a new window minimized, as true backgrounding is tricky
-start "Flask Server" /MIN python "%SCRIPT_DIR%app.py"
-echo Flask app running. Access it at http://127.0.0.1:5000/
-echo Note: The Flask server window will be minimized. Close it manually when done, or it will close when this main script window is closed.
+echo Starting Flask web server...
 
-echo Starting CLI application...
-python "%SCRIPT_DIR%main_cli.py"
+REM Attempt to open the web browser first, then start server.
+REM This way, if server start fails, user isn't left with just a browser window.
+echo Attempting to open web browser to %URL%...
+start "" "%URL%"
 
-echo.
-echo CLI application has finished.
-echo Closing Flask server (if it was started by this script and is still running)...
-REM Attempt to close the Flask server by title. This may not always work reliably.
-taskkill /FI "WINDOWTITLE eq Flask Server*" /IM python.exe /F >nul 2>&1
+REM Give the browser a moment to launch, and server a head start if needed by browser.
+timeout /t 2 /nobreak > nul
+
+REM Run Flask app directly in this console. The script will wait here until Flask exits.
+python "%SCRIPT_DIR%app.py"
+
+REM When app.py (Flask server) is shut down (e.g., via the web UI button),
+REM control will return here.
 
 REM Deactivate virtual environment
 if defined VIRTUAL_ENV (
+    echo Flask server has shut down.
     echo Deactivating virtual environment...
     call "%SCRIPT_DIR%venv\Scripts\deactivate.bat"
 )
 
 echo Exiting.
-pause
+exit /b 0
