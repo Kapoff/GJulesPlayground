@@ -182,13 +182,19 @@
             }
             currentMeal.forEach((item, index) => {
                 const li = document.createElement('li');
+                li.classList.add('meal-item-row'); // For flex styling
 
-                // Ingredient Name Span
+                // Left part: Name and Weight
+                const leftDiv = document.createElement('div');
+                leftDiv.classList.add('meal-item-left');
+
                 const nameSpan = document.createElement('span');
-                nameSpan.textContent = `${item.name} - `;
-                li.appendChild(nameSpan);
+                nameSpan.classList.add('meal-item-name');
+                nameSpan.textContent = item.name;
+                nameSpan.title = item.name; // For full name tooltip on hover
+                leftDiv.appendChild(nameSpan);
 
-                // Editable Weight Input
+                const weightInput = document.createElement('input');
                 const weightInput = document.createElement('input');
                 weightInput.type = 'number';
                 weightInput.value = item.weight;
@@ -196,44 +202,103 @@
                 weightInput.step = "0.1";
                 weightInput.classList.add('editable-weight-input'); // For styling
                 weightInput.dataset.index = index; // Store index for easy update
-
-                weightInput.addEventListener('change', (event) => {
-                    const newWeight = parseFloat(event.target.value);
-                    const itemIndex = parseInt(event.target.dataset.index);
-                    if (!isNaN(newWeight) && newWeight > 0) {
-                        currentMeal[itemIndex].weight = newWeight;
-                        // If nutrition results are visible, maybe offer a "Recalculate" button or clear them
-                        if (nutritionResultsSection.style.display !== 'none') {
-                            nutritionStatus.textContent = 'Meal composition changed. Please recalculate.';
-                            nutritionStatus.className = 'status-message info';
-                            // Optionally hide old results or disable calculate button until re-rendered
-                        }
-                    } else {
-                        // Reset to old value if input is invalid
-                        event.target.value = currentMeal[itemIndex].weight;
-                        mealIngredientStatus.textContent = 'Invalid weight. Please enter a positive number.';
-                        mealIngredientStatus.className = 'status-message error';
-                        setTimeout(() => { mealIngredientStatus.textContent = ''; mealIngredientStatus.className = 'status-message';}, 3000);
-                    }
-                });
-                li.appendChild(weightInput);
+                weightInput.addEventListener('change', (event) => handleWeightChange(event, index));
+                leftDiv.appendChild(weightInput);
 
                 const unitSpan = document.createElement('span');
+                unitSpan.classList.add('meal-item-unit');
                 unitSpan.textContent = "g";
-                li.appendChild(unitSpan);
+                leftDiv.appendChild(unitSpan);
+                li.appendChild(leftDiv);
 
+                // Middle part: Calculated Macros (initially empty)
+                const macrosDiv = document.createElement('div');
+                macrosDiv.classList.add('meal-item-macros');
+                macrosDiv.id = `macros-${index}`; // To target for updates
+                // Structure for macros: Kcal: X, Prot: Y, Carb: Z, Fat: A
+                macrosDiv.innerHTML = `
+                    <span class="macro-kcal"></span>
+                    <span class="macro-prot"></span>
+                    <span class="macro-carb"></span>
+                    <span class="macro-fat"></span>
+                `;
+                li.appendChild(macrosDiv);
+                // Populate macros if they exist (e.g., after calculation)
+                if (item.calculatedMacros) {
+                    updateMacrosDisplay(macrosDiv, item.calculatedMacros);
+                }
+
+
+                // Right part: Remove Button
                 const removeBtn = document.createElement('button');
-                removeBtn.textContent = 'Remove';
-                removeBtn.classList.add('remove-btn');
+                removeBtn.classList.add('meal-item-remove-btn');
+                removeBtn.innerHTML = '&times;'; // 'X' symbol
+                removeBtn.title = 'Remove ingredient';
                 removeBtn.onclick = () => {
                     currentMeal.splice(index, 1);
                     renderCurrentMeal();
-                     if (currentMeal.length === 0) calculateNutritionBtn.disabled = true;
+                    if (currentMeal.length === 0) calculateNutritionBtn.disabled = true;
+                     // If nutrition results are visible, prompt for recalculation
+                    if (nutritionResultsSection.style.display !== 'none') {
+                        nutritionStatus.textContent = 'Meal composition changed (item removed). Please recalculate.';
+                        nutritionStatus.className = 'status-message info';
+                        // Clear or hide old overall results table
+                        // totalNutritionTableBody.innerHTML = '';
+                        // per100gNutritionTableBody.innerHTML = '';
+                    }
                 };
                 li.appendChild(removeBtn);
                 currentMealList.appendChild(li);
             });
         }
+
+        function handleWeightChange(event, index) {
+            const newWeight = parseFloat(event.target.value);
+            if (!isNaN(newWeight) && newWeight > 0) {
+                currentMeal[index].weight = newWeight;
+                // Clear its previously calculated macros if any, as they are now stale
+                if (currentMeal[index].calculatedMacros) {
+                    delete currentMeal[index].calculatedMacros;
+                    const macrosDiv = document.getElementById(`macros-${index}`);
+                    if (macrosDiv) {
+                         updateMacrosDisplay(macrosDiv, null); // Clear display
+                    }
+                }
+                if (nutritionResultsSection.style.display !== 'none') {
+                    nutritionStatus.textContent = 'Meal composition changed. Please recalculate for overall totals.';
+                    nutritionStatus.className = 'status-message info';
+                    // Optionally clear overall totals tables
+                    // totalNutritionTableBody.innerHTML = '';
+                    // per100gNutritionTableBody.innerHTML = '';
+                }
+            } else {
+                event.target.value = currentMeal[index].weight; // Reset to old value
+                mealIngredientStatus.textContent = 'Invalid weight. Please enter a positive number.';
+                mealIngredientStatus.className = 'status-message error';
+                setTimeout(() => { mealIngredientStatus.textContent = ''; mealIngredientStatus.className = 'status-message'; }, 3000);
+            }
+        }
+
+        function updateMacrosDisplay(macrosDiv, macros) {
+            const kcalSpan = macrosDiv.querySelector('.macro-kcal');
+            const protSpan = macrosDiv.querySelector('.macro-prot');
+            const carbSpan = macrosDiv.querySelector('.macro-carb');
+            const fatSpan = macrosDiv.querySelector('.macro-fat');
+
+            if (macros) {
+                kcalSpan.textContent = `Kcal: ${macros.calories.toFixed(0)}`;
+                protSpan.textContent = `Prot: ${macros.protein_g.toFixed(1)}g`;
+                carbSpan.textContent = `Carb: ${macros.carbs_g.toFixed(1)}g`;
+                fatSpan.textContent = `Fat: ${macros.fat_g.toFixed(1)}g`;
+            } else {
+                // Clear display
+                kcalSpan.textContent = '';
+                protSpan.textContent = '';
+                carbSpan.textContent = '';
+                fatSpan.textContent = '';
+            }
+        }
+
 
         calculateNutritionBtn.addEventListener('click', async () => {
             if (currentMeal.length === 0) {
@@ -285,16 +350,21 @@
         function displayNutritionResults(name, totalNutrition, per100gNutrition, ingredientsList) {
             resultMealName.textContent = name;
 
-            // The currentMealList is already rendered with editable inputs by renderCurrentMeal().
-            // We should not overwrite it here with static text.
-            // If details of individual calculated ingredients are needed, they could go into a new table or section.
-            // For now, we will leave currentMealList as is.
+            // Store calculated macros for each ingredient back into the currentMeal array
+            // ingredientsList comes from the server and contains calculated values per item
+            ingredientsList.forEach((calculatedItem, index) => {
+                if (currentMeal[index] && currentMeal[index].name === calculatedItem.name) {
+                    currentMeal[index].calculatedMacros = {
+                        calories: calculatedItem.calories,
+                        protein_g: calculatedItem.protein_g,
+                        carbs_g: calculatedItem.carbs_g,
+                        fat_g: calculatedItem.fat_g
+                    };
+                }
+            });
 
-            // If you want to display the calculated nutrition for each item in the list (after calculation):
-            // You could iterate through currentMeal and ingredientsList (which should match in order and items)
-            // and update a specific part of each <li> in currentMealList, or add a new details section.
-            // This adds complexity. The current setup with editable fields in currentMealList and
-            // separate summary tables for total and per-100g seems reasonable.
+            // Re-render the current meal list to show these new macros
+            renderCurrentMeal();
 
             totalNutritionTableBody.innerHTML = ''; // Clear previous results
             populateTable(totalNutritionTableBody, [
