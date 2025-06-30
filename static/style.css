@@ -276,13 +276,14 @@ section:last-child {
 }
 
 /* New styles for currentMealList items */
-.meal-item-row {
+#currentMealList li.meal-item-row { /* Make selector more specific if needed */
     display: flex;
     align-items: center;
-    padding: 8px 12px; /* Adjusted padding */
+    padding: 10px 12px; /* Increased padding for better spacing */
     border-bottom: 1px solid #f0f0f0;
+    min-height: 40px; /* Ensure consistent row height */
 }
-.meal-item-row:last-child {
+#currentMealList li.meal-item-row:last-child { /* Corrected selector */
     border-bottom: none;
 }
 
