@@ -1,51 +1,96 @@
-body {
-    font-family: sans-serif;
+/* Basic Reset */
+* {
     margin: 0;
-    background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
+    padding: 0;
     box-sizing: border-box;
 }
 
-.container {
-    background-color: #fff;
-    padding: 25px 30px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 500px;
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background-color: #f0f2f5;
+    color: #333;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top for longer pages */
+    min-height: 100vh;
 }
 
-h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 20px;
+.container {
+    width: 100%;
+    max-width: 800px; /* Slightly wider for more complex layouts */
+    margin: 20px auto; /* Add some margin top/bottom */
+    background: #ffffff;
+    padding: 25px 30px; /* More padding */
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
+header {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center; /* Center header content */
+}
+
+header h1 {
+    color: #2c3e50; /* Darker, more modern blue */
+    margin-bottom: 10px; /* Space between title and nav */
+}
+
+nav {
+    margin-top: 10px; /* Space above nav links if h1 is also present */
+}
+
+.nav-link {
+    margin: 0 10px;
+    color: #3498db; /* Bright blue for links */
+    text-decoration: none;
+    font-weight: 500;
+    padding: 5px 8px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover, .nav-link:focus {
+    background-color: #ecf0f1; /* Light grey background on hover */
+    color: #2980b9; /* Darker blue on hover */
+}
+
+
+h1, h2, h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center; /* Center all headings */
+}
+h1 { font-size: 2em; }
+h2 { font-size: 1.5em; margin-top: 25px;} /* More top margin for sections */
+h3 { font-size: 1.2em; margin-top: 20px;}
+
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 18px; /* Slightly more spacing */
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    font-weight: 600; /* Bolder labels */
     color: #555;
-    font-weight: bold;
+    text-align: left; /* Align labels to the left */
 }
 
 .form-group input[type="text"],
-.form-group input[type="number"] {
+.form-group input[type="number"],
+.form-group select { /* Style select elements too */
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
+    padding: 12px; /* More padding for better touch targets */
+    border: 1px solid #ccc;
+    border-radius: 5px;
     font-size: 1em;
+    box-sizing: border-box; /* Ensure padding doesn't increase width */
 }
-
 .form-group input[type="number"] {
     -moz-appearance: textfield; /* Firefox */
 }
@@ -56,54 +101,252 @@ h1 {
 }
 
 
-button[type="submit"] {
-    background-color: #5cb85c;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1.1em;
-    width: 100%;
-    transition: background-color 0.3s ease;
+.form-group input:focus, .form-group select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    outline: none;
 }
 
-button[type="submit"]:hover {
-    background-color: #4cae4c;
+
+.button, button[type="submit"], button { /* General button styling */
+    display: inline-block;
+    padding: 12px 20px; /* Consistent padding */
+    background-color: #3498db; /* Primary blue */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    margin-top: 10px; /* Add some space above buttons */
 }
+
+button:hover, .button:hover, button[type="submit"]:hover {
+    background-color: #2980b9; /* Darker blue */
+}
+
+/* Specifically target the main submit button for add ingredient if needed */
+form#addIngredientForm button[type="submit"] {
+    width: 100%; /* Make it full width */
+}
+
+
+button.primary-action { /* For more prominent actions */
+    background-color: #2ecc71; /* Green */
+}
+button.primary-action:hover {
+    background-color: #27ae60; /* Darker green */
+}
+
+button.remove-btn {
+    background-color: #e74c3c; /* Red */
+    padding: 5px 10px; /* Adjust padding */
+    font-size: 0.9em; /* Slightly smaller font */
+    margin-left: 10px;
+}
+button.remove-btn:hover {
+    background-color: #c0392b; /* Darker red */
+}
+
+button:disabled {
+    background-color: #bdc3c7; /* Grey for disabled */
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 
 .status-message {
-    margin-top: 15px;
-    padding: 10px;
-    border-radius: 4px;
+    margin-top: 18px;
+    margin-bottom: 15px; /* Add some space below */
+    padding: 12px 15px;
+    border-radius: 5px;
     text-align: center;
-    font-weight: bold;
+    font-size: 0.95em;
+    border: 1px solid transparent;
 }
 
 .status-message.success {
-    background-color: #dff0d8;
-    color: #3c763d;
-    border: 1px solid #d6e9c6;
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
 }
 
 .status-message.error {
-    background-color: #f2dede;
-    color: #a94442;
-    border: 1px solid #ebccd1;
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
 }
 
+.status-message.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+/* Landing page specific styles */
+.navigation-links {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+    margin-top: 30px;
+}
+
+.navigation-links li {
+    margin-bottom: 15px;
+}
+
+.navigation-links .button {
+    display: block;
+    width: 70%; /* Adjust width as preferred */
+    margin-left: auto;
+    margin-right: auto;
+    padding: 12px 20px; /* Ensure consistent padding */
+    font-size: 1.1em; /* Slightly larger font for main navigation */
+}
+
+/* Track Meal page specific styles */
+section { /* Add some spacing between sections */
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+
+.ingredient-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.ingredient-selector .form-group {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+.ingredient-selector .form-group:nth-child(1) { /* Ingredient search/select */
+    flex-basis: 60%; /* Give more space to ingredient selection */
+    min-width: 200px;
+}
+.ingredient-selector .form-group:nth-child(2) { /* Weight input */
+    flex-basis: 30%;
+    min-width: 100px;
+}
+.ingredient-selector button {
+    flex-basis: auto; /* Button takes its own width */
+    height: 48px; /* Match input height (padding 12px*2 + line-height approx) */
+    align-self: flex-end;
+}
+
+
+#currentMealList {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
+
+#currentMealList li {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+#currentMealList li:last-child {
+    border-bottom: none;
+}
+#currentMealList li:hover {
+    background-color: #f9f9f9;
+}
+#currentMealList li:empty { /* Style for the "No ingredients" message */
+    justify-content: center;
+    color: #777;
+    font-style: italic;
+}
+
+
+#nutritionResultsSection table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#nutritionResultsSection th, #nutritionResultsSection td {
+    text-align: left;
+    padding: 12px 15px; /* More padding in tables */
+    border: 1px solid #e0e0e0;
+}
+
+#nutritionResultsSection th {
+    background-color: #f7f7f7; /* Lighter header for tables */
+    color: #333;
+    font-weight: 600;
+}
+#nutritionResultsSection tr:nth-child(even) td {
+    background-color: #fdfdfd; /* Subtle striping for readability */
+}
+
+
 /* Responsive adjustments */
+@media (max-width: 700px) {
+    .ingredient-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ingredient-selector .form-group,
+    .ingredient-selector button {
+        width: 100%;
+        max-width: none;
+        flex-basis: auto; /* Reset basis for column layout */
+    }
+    .ingredient-selector button {
+        margin-top: 10px; /* Add space when button is below inputs */
+    }
+}
+
 @media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
     .container {
-        margin: 20px;
-        padding: 20px;
+        padding: 20px 15px;
+        margin: 10px auto;
+    }
+    header h1 {
+        font-size: 1.6em;
+    }
+    h1 {font-size: 1.8em;}
+    h2 {font-size: 1.3em;}
+    h3 {font-size: 1.1em;}
+
+    .button, button[type="submit"], button {
+        padding: 10px 15px;
+        font-size: 0.95em;
     }
 
-    h1 {
-        font-size: 1.5em;
-    }
-
-    button[type="submit"] {
+    .navigation-links .button {
+        width: 85%;
         font-size: 1em;
+    }
+    #nutritionResultsSection th, #nutritionResultsSection td {
+        padding: 8px 10px;
     }
 }
