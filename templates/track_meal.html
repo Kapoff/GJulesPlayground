@@ -98,7 +98,22 @@
         const nutritionStatus = document.getElementById('nutritionStatus');
 
         let availableIngredients = [];
-        let currentMeal = []; // Array of {name, weight, originalData}
+        // Structure for currentMeal items: { name: string, weight: float, originalData: object, calculatedMacros?: object }
+        let currentMeal = [];
+
+        function calculateSingleIngredientMacros(ingredientBaseData, weight) {
+            if (!ingredientBaseData || typeof weight !== 'number' || weight <= 0) {
+                return null;
+            }
+            // Assuming ingredientBaseData contains nutritional values per 100g
+            const factor = weight / 100.0;
+            return {
+                calories: ingredientBaseData.calories * factor,
+                protein_g: ingredientBaseData.protein * factor,
+                carbs_g: ingredientBaseData.carbs * factor,
+                fat_g: ingredientBaseData.fat * factor
+            };
+        }
 
         async function fetchIngredients() {
             try {
@@ -158,8 +173,15 @@
             const ingredientData = availableIngredients.find(ing => ing.name === ingredientName);
 
             if (ingredientData) {
-                currentMeal.push({ name: ingredientName, weight: weight, originalData: ingredientData });
-                renderCurrentMeal();
+                const newItem = {
+                    name: ingredientName,
+                    weight: weight,
+                    originalData: ingredientData
+                };
+                newItem.calculatedMacros = calculateSingleIngredientMacros(newItem.originalData, newItem.weight);
+                currentMeal.push(newItem);
+
+                renderCurrentMeal(); // This will now display the item with its calculated macros
                 ingredientWeightInput.value = ''; // Clear weight input
                 calculateNutritionBtn.disabled = false;
                 mealIngredientStatus.textContent = `${ingredientName} added to meal.`;
@@ -256,23 +278,25 @@
             const newWeight = parseFloat(event.target.value);
             if (!isNaN(newWeight) && newWeight > 0) {
                 currentMeal[index].weight = newWeight;
-                // Clear its previously calculated macros if any, as they are now stale
-                if (currentMeal[index].calculatedMacros) {
-                    delete currentMeal[index].calculatedMacros;
-                    const macrosDiv = document.getElementById(`macros-${index}`);
-                    if (macrosDiv) {
-                         updateMacrosDisplay(macrosDiv, null); // Clear display
-                    }
+                // Recalculate and update macros for this specific item
+                currentMeal[index].calculatedMacros = calculateSingleIngredientMacros(currentMeal[index].originalData, newWeight);
+
+                // Update the display for this specific item's macros
+                const macrosDiv = document.getElementById(`macros-${index}`);
+                if (macrosDiv) {
+                    updateMacrosDisplay(macrosDiv, currentMeal[index].calculatedMacros);
                 }
+
+                // If overall meal results were visible, they are now potentially stale
                 if (nutritionResultsSection.style.display !== 'none') {
-                    nutritionStatus.textContent = 'Meal composition changed. Please recalculate for overall totals.';
+                    nutritionStatus.textContent = 'Meal composition changed. Please recalculate overall totals.';
                     nutritionStatus.className = 'status-message info';
-                    // Optionally clear overall totals tables
-                    // totalNutritionTableBody.innerHTML = '';
-                    // per100gNutritionTableBody.innerHTML = '';
+                    // Clear overall totals tables as they are definitely outdated
+                    totalNutritionTableBody.innerHTML = '<tr><td colspan="2"><em>Totals outdated due to weight change. Recalculate meal.</em></td></tr>';
+                    per100gNutritionTableBody.innerHTML = '<tr><td colspan="2"><em>Totals outdated due to weight change. Recalculate meal.</em></td></tr>';
                 }
             } else {
-                event.target.value = currentMeal[index].weight; // Reset to old value
+                event.target.value = currentMeal[index].weight; // Reset to old value if input is invalid
                 mealIngredientStatus.textContent = 'Invalid weight. Please enter a positive number.';
                 mealIngredientStatus.className = 'status-message error';
                 setTimeout(() => { mealIngredientStatus.textContent = ''; mealIngredientStatus.className = 'status-message'; }, 3000);
