@@ -453,10 +453,13 @@ section:last-child {
     border-radius: 50%; /* Circular button */
     font-size: 20px; /* Size of the 'X' icon */
     font-weight: bold;
-    line-height: 40px; /* Center the 'X' vertically */
-    text-align: center;
+    /* line-height: 40px; Removed for flex centering */
+    /* text-align: center; Removed for flex centering */
     cursor: pointer;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 1000; /* Ensure it's on top of other elements */
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
@@ -476,9 +479,10 @@ section:last-child {
     padding: 5px 0;
     position: absolute;
     z-index: 1;
-    bottom: 125%; /* Position above the button */
-    left: 50%;
-    margin-left: -60px; /* Use half of the width to center the tooltip */
+    top: 50%; /* Vertically center relative to button height */
+    right: 105%; /* Position to the left of the button (100% + 5% gap) */
+    margin-right: 5px; /* Optional: small gap if 105% isn't enough */
+    transform: translateY(-50%); /* Adjust to truly center vertically */
     opacity: 0;
     transition: opacity 0.3s;
     font-size: 12px; /* Smaller font for tooltip */
