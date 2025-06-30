@@ -1,0 +1,37 @@
+{
+    "Your mom": {
+        "name": "Your mom",
+        "calories": 9001.0,
+        "protein": 69.0,
+        "carbs": 99.0,
+        "fat": 99.0
+    },
+    "food": {
+        "name": "food",
+        "calories": 117.0,
+        "protein": 15.0,
+        "carbs": 6.0,
+        "fat": 8.0
+    },
+    "chicken breast": {
+        "name": "chicken breast",
+        "calories": 100.0,
+        "protein": 22.0,
+        "carbs": 0.0,
+        "fat": 2.0
+    },
+    "souls": {
+        "name": "souls",
+        "calories": 666.0,
+        "protein": 0.0,
+        "carbs": 1230.0,
+        "fat": 0.0
+    },
+    "apples": {
+        "name": "apples",
+        "calories": 85.0,
+        "protein": 0.5,
+        "carbs": 18.0,
+        "fat": 0.1
+    }
+}
