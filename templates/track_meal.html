@@ -120,7 +120,12 @@
             ingredients.forEach(ing => {
                 const option = document.createElement('option');
                 option.value = ing.name;
-                option.textContent = `${ing.name} (C:${ing.calories} P:${ing.protein} C:${ing.carbs} F:${ing.fat} per 100g)`;
+                option.textContent = ing.name; // Display only the name
+
+                // Create tooltip content
+                const tooltipText = `Calories: ${ing.calories.toFixed(1)} kcal\nProtein: ${ing.protein.toFixed(1)} g\nCarbs: ${ing.carbs.toFixed(1)} g\nFat: ${ing.fat.toFixed(1)} g\n(per 100g)`;
+                option.title = tooltipText; // Use the native title attribute for simple tooltips
+
                 ingredientSelect.appendChild(option);
             });
         }
@@ -177,7 +182,45 @@
             }
             currentMeal.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.textContent = `${item.name} - ${item.weight}g`;
+
+                // Ingredient Name Span
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = `${item.name} - `;
+                li.appendChild(nameSpan);
+
+                // Editable Weight Input
+                const weightInput = document.createElement('input');
+                weightInput.type = 'number';
+                weightInput.value = item.weight;
+                weightInput.min = "0.1"; // Smallest reasonable weight
+                weightInput.step = "0.1";
+                weightInput.classList.add('editable-weight-input'); // For styling
+                weightInput.dataset.index = index; // Store index for easy update
+
+                weightInput.addEventListener('change', (event) => {
+                    const newWeight = parseFloat(event.target.value);
+                    const itemIndex = parseInt(event.target.dataset.index);
+                    if (!isNaN(newWeight) && newWeight > 0) {
+                        currentMeal[itemIndex].weight = newWeight;
+                        // If nutrition results are visible, maybe offer a "Recalculate" button or clear them
+                        if (nutritionResultsSection.style.display !== 'none') {
+                            nutritionStatus.textContent = 'Meal composition changed. Please recalculate.';
+                            nutritionStatus.className = 'status-message info';
+                            // Optionally hide old results or disable calculate button until re-rendered
+                        }
+                    } else {
+                        // Reset to old value if input is invalid
+                        event.target.value = currentMeal[itemIndex].weight;
+                        mealIngredientStatus.textContent = 'Invalid weight. Please enter a positive number.';
+                        mealIngredientStatus.className = 'status-message error';
+                        setTimeout(() => { mealIngredientStatus.textContent = ''; mealIngredientStatus.className = 'status-message';}, 3000);
+                    }
+                });
+                li.appendChild(weightInput);
+
+                const unitSpan = document.createElement('span');
+                unitSpan.textContent = "g";
+                li.appendChild(unitSpan);
 
                 const removeBtn = document.createElement('button');
                 removeBtn.textContent = 'Remove';
@@ -242,14 +285,16 @@
         function displayNutritionResults(name, totalNutrition, per100gNutrition, ingredientsList) {
             resultMealName.textContent = name;
 
-            // Update Current Meal List to include details from calculation (optional, but can be good for verification)
-            currentMealList.innerHTML = ''; // Clear existing list
-            ingredientsList.forEach(item => {
-                 const li = document.createElement('li');
-                 li.textContent = `${item.name}: ${item.weight_g}g (Cals: ${item.calories.toFixed(1)}, P: ${item.protein_g.toFixed(1)}g, C: ${item.carbs_g.toFixed(1)}g, F: ${item.fat_g.toFixed(1)}g)`;
-                 currentMealList.appendChild(li);
-            });
+            // The currentMealList is already rendered with editable inputs by renderCurrentMeal().
+            // We should not overwrite it here with static text.
+            // If details of individual calculated ingredients are needed, they could go into a new table or section.
+            // For now, we will leave currentMealList as is.
 
+            // If you want to display the calculated nutrition for each item in the list (after calculation):
+            // You could iterate through currentMeal and ingredientsList (which should match in order and items)
+            // and update a specific part of each <li> in currentMealList, or add a new details section.
+            // This adds complexity. The current setup with editable fields in currentMealList and
+            // separate summary tables for total and per-100g seems reasonable.
 
             totalNutritionTableBody.innerHTML = ''; // Clear previous results
             populateTable(totalNutritionTableBody, [

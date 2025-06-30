@@ -274,6 +274,14 @@ section:last-child {
 #currentMealList li:hover {
     background-color: #f9f9f9;
 }
+#currentMealList li .editable-weight-input {
+    width: 70px; /* Adjust width as needed */
+    padding: 5px;
+    margin: 0 5px;
+    text-align: right;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
 #currentMealList li:empty { /* Style for the "No ingredients" message */
     justify-content: center;
     color: #777;
