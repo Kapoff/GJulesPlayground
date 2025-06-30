@@ -274,6 +274,94 @@ section:last-child {
 #currentMealList li:hover {
     background-color: #f9f9f9;
 }
+
+/* New styles for currentMealList items */
+#currentMealList li.meal-item-row { /* Make selector more specific if needed */
+    display: flex;
+    align-items: center;
+    padding: 10px 12px; /* Increased padding for better spacing */
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 40px; /* Ensure consistent row height */
+}
+#currentMealList li.meal-item-row:last-child { /* Corrected selector */
+    border-bottom: none;
+}
+
+.meal-item-left {
+    display: flex;
+    align-items: center;
+    flex-grow: 0; /* Don't grow, fixed size area for name/weight */
+    flex-shrink: 0;
+    padding-right: 10px;
+}
+
+.meal-item-name {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* Adjust as needed, or use flex basis on parent */
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.editable-weight-input { /* Renamed from #currentMealList li .editable-weight-input */
+    width: 65px;
+    padding: 4px 6px;
+    text-align: right;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95em;
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+.meal-item-unit {
+    font-size: 0.9em;
+    color: #555;
+    margin-right: 10px; /* Space before macros */
+    vertical-align: middle;
+}
+
+.meal-item-macros {
+    flex-grow: 1; /* Takes up available space */
+    display: flex;
+    align-items: center;
+    font-size: 0.85em;
+    color: #444;
+    white-space: nowrap;
+    overflow: hidden; /* In case macro string gets too long */
+    text-overflow: ellipsis;
+}
+
+.meal-item-macros span {
+    margin-right: 8px; /* Spacing between macro values */
+}
+.meal-item-macros span:empty { /* Hide if no macro data yet */
+    display: none;
+}
+
+
+.meal-item-remove-btn {
+    background-color: transparent;
+    color: #e74c3c;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 1.2em; /* Larger X */
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: auto; /* Pushes it to the far right */
+    flex-shrink: 0; /* Don't shrink */
+    line-height: 1; /* Ensure X is centered well */
+}
+
+.meal-item-remove-btn:hover {
+    background-color: #fdecea; /* Light red background on hover */
+    color: #c0392b;
+}
+
+
 #currentMealList li:empty { /* Style for the "No ingredients" message */
     justify-content: center;
     color: #777;
@@ -349,4 +437,54 @@ section:last-child {
     #nutritionResultsSection th, #nutritionResultsSection td {
         padding: 8px 10px;
     }
+}
+
+/* Global Shutdown Button */
+.global-shutdown-button {
+    position: fixed; /* Fixed position relative to the viewport */
+    top: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+    background-color: #e74c3c; /* Red */
+    color: white;
+    border: none;
+    border-radius: 50%; /* Circular button */
+    font-size: 20px; /* Size of the 'X' icon */
+    font-weight: bold;
+    line-height: 40px; /* Center the 'X' vertically */
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000; /* Ensure it's on top of other elements */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.global-shutdown-button:hover {
+    background-color: #c0392b; /* Darker red on hover */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+.global-shutdown-button .tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position above the button */
+    left: 50%;
+    margin-left: -60px; /* Use half of the width to center the tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px; /* Smaller font for tooltip */
+    line-height: normal; /* Reset line-height for tooltip text */
+}
+
+.global-shutdown-button:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
 }

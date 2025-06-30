@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <button id="globalShutdownBtn" class="global-shutdown-button" title="Shutdown Server">
+        &times; <!-- This is the 'X' symbol -->
+        <span class="tooltip-text">Shutdown Server</span>
+    </button>
+
     <div class="container">
         <h1>Nutrition Tracker</h1>
         <p>Welcome to the Nutrition Tracker application. Choose an option below to get started.</p>
@@ -15,5 +20,36 @@
             <li><a href="{{ url_for('track_meal_page') }}" class="button">Track a Meal</a></li>
         </ul>
     </div>
+
+    <script>
+        // Global Shutdown server button event listener
+        const globalShutdownBtn = document.getElementById('globalShutdownBtn');
+        if (globalShutdownBtn) {
+            globalShutdownBtn.addEventListener('click', async function() {
+                try {
+                    await fetch('/shutdown-server');
+                    globalShutdownBtn.innerHTML = "&check;";
+                    globalShutdownBtn.title = "Server shutting down";
+                    globalShutdownBtn.disabled = true;
+                    // Display a message on the page
+                    let msgDiv = document.createElement('div');
+                    msgDiv.style.position = 'fixed';
+                    msgDiv.style.top = '50%';
+                    msgDiv.style.left = '50%';
+                    msgDiv.style.transform = 'translate(-50%, -50%)';
+                    msgDiv.style.padding = '20px';
+                    msgDiv.style.backgroundColor = 'lightgreen';
+                    msgDiv.style.border = '1px solid green';
+                    msgDiv.style.borderRadius = '5px';
+                    msgDiv.style.zIndex = '1001';
+                    msgDiv.textContent = 'Server shutdown initiated. You may close this window.';
+                    document.body.appendChild(msgDiv);
+                } catch (error) {
+                    console.error('Error sending shutdown command:', error);
+                    alert('Failed to send shutdown command. The server might already be down or unreachable.');
+                }
+            });
+        }
+    </script>
 </body>
 </html>

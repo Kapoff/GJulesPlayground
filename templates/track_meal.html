@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <button id="globalShutdownBtn" class="global-shutdown-button" title="Shutdown Server">
+        &times; <!-- This is the 'X' symbol -->
+        <span class="tooltip-text">Shutdown Server</span>
+    </button>
+
     <div class="container">
         <header>
             <h1>Track Your Meal</h1>
@@ -115,7 +120,12 @@
             ingredients.forEach(ing => {
                 const option = document.createElement('option');
                 option.value = ing.name;
-                option.textContent = `${ing.name} (C:${ing.calories} P:${ing.protein} C:${ing.carbs} F:${ing.fat} per 100g)`;
+                option.textContent = ing.name; // Display only the name
+
+                // Create tooltip content
+                const tooltipText = `Calories: ${ing.calories.toFixed(1)} kcal\nProtein: ${ing.protein.toFixed(1)} g\nCarbs: ${ing.carbs.toFixed(1)} g\nFat: ${ing.fat.toFixed(1)} g\n(per 100g)`;
+                option.title = tooltipText; // Use the native title attribute for simple tooltips
+
                 ingredientSelect.appendChild(option);
             });
         }
@@ -172,20 +182,123 @@
             }
             currentMeal.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.textContent = `${item.name} - ${item.weight}g`;
+                li.classList.add('meal-item-row'); // For flex styling
 
+                // Left part: Name and Weight
+                const leftDiv = document.createElement('div');
+                leftDiv.classList.add('meal-item-left');
+
+                const nameSpan = document.createElement('span');
+                nameSpan.classList.add('meal-item-name');
+                nameSpan.textContent = item.name;
+                nameSpan.title = item.name; // For full name tooltip on hover
+                leftDiv.appendChild(nameSpan);
+
+                const weightInput = document.createElement('input');
+                // Removed duplicate const weightInput = document.createElement('input');
+                weightInput.type = 'number';
+                weightInput.value = item.weight;
+                weightInput.min = "0.1"; // Smallest reasonable weight
+                weightInput.step = "0.1";
+                weightInput.classList.add('editable-weight-input'); // For styling
+                weightInput.dataset.index = index; // Store index for easy update
+                weightInput.addEventListener('change', (event) => handleWeightChange(event, index));
+                leftDiv.appendChild(weightInput);
+
+                const unitSpan = document.createElement('span');
+                unitSpan.classList.add('meal-item-unit');
+                unitSpan.textContent = "g";
+                leftDiv.appendChild(unitSpan);
+                li.appendChild(leftDiv);
+
+                // Middle part: Calculated Macros (initially empty)
+                const macrosDiv = document.createElement('div');
+                macrosDiv.classList.add('meal-item-macros');
+                macrosDiv.id = `macros-${index}`; // To target for updates
+                // Structure for macros: Kcal: X, Prot: Y, Carb: Z, Fat: A
+                macrosDiv.innerHTML = `
+                    <span class="macro-kcal"></span>
+                    <span class="macro-prot"></span>
+                    <span class="macro-carb"></span>
+                    <span class="macro-fat"></span>
+                `;
+                li.appendChild(macrosDiv);
+                // Populate macros if they exist (e.g., after calculation)
+                if (item.calculatedMacros) {
+                    updateMacrosDisplay(macrosDiv, item.calculatedMacros);
+                }
+
+
+                // Right part: Remove Button
                 const removeBtn = document.createElement('button');
-                removeBtn.textContent = 'Remove';
-                removeBtn.classList.add('remove-btn');
+                removeBtn.classList.add('meal-item-remove-btn');
+                removeBtn.innerHTML = '&times;'; // 'X' symbol
+                removeBtn.title = 'Remove ingredient';
                 removeBtn.onclick = () => {
                     currentMeal.splice(index, 1);
                     renderCurrentMeal();
-                     if (currentMeal.length === 0) calculateNutritionBtn.disabled = true;
+                    if (currentMeal.length === 0) calculateNutritionBtn.disabled = true;
+                     // If nutrition results are visible, prompt for recalculation
+                    if (nutritionResultsSection.style.display !== 'none') {
+                        nutritionStatus.textContent = 'Meal composition changed (item removed). Please recalculate.';
+                        nutritionStatus.className = 'status-message info';
+                        // Clear or hide old overall results table
+                        // totalNutritionTableBody.innerHTML = '';
+                        // per100gNutritionTableBody.innerHTML = '';
+                    }
                 };
                 li.appendChild(removeBtn);
                 currentMealList.appendChild(li);
             });
         }
+
+        function handleWeightChange(event, index) {
+            const newWeight = parseFloat(event.target.value);
+            if (!isNaN(newWeight) && newWeight > 0) {
+                currentMeal[index].weight = newWeight;
+                // Clear its previously calculated macros if any, as they are now stale
+                if (currentMeal[index].calculatedMacros) {
+                    delete currentMeal[index].calculatedMacros;
+                    const macrosDiv = document.getElementById(`macros-${index}`);
+                    if (macrosDiv) {
+                         updateMacrosDisplay(macrosDiv, null); // Clear display
+                    }
+                }
+                if (nutritionResultsSection.style.display !== 'none') {
+                    nutritionStatus.textContent = 'Meal composition changed. Please recalculate for overall totals.';
+                    nutritionStatus.className = 'status-message info';
+                    // Optionally clear overall totals tables
+                    // totalNutritionTableBody.innerHTML = '';
+                    // per100gNutritionTableBody.innerHTML = '';
+                }
+            } else {
+                event.target.value = currentMeal[index].weight; // Reset to old value
+                mealIngredientStatus.textContent = 'Invalid weight. Please enter a positive number.';
+                mealIngredientStatus.className = 'status-message error';
+                setTimeout(() => { mealIngredientStatus.textContent = ''; mealIngredientStatus.className = 'status-message'; }, 3000);
+            }
+        }
+
+        function updateMacrosDisplay(macrosDiv, macros) {
+            const kcalSpan = macrosDiv.querySelector('.macro-kcal');
+            const protSpan = macrosDiv.querySelector('.macro-prot');
+            const carbSpan = macrosDiv.querySelector('.macro-carb');
+            const fatSpan = macrosDiv.querySelector('.macro-fat');
+
+            if (macros) {
+                kcalSpan.textContent = `kcal: ${macros.calories.toFixed(0)}`;
+                protSpan.textContent = `Prot.: ${macros.protein_g.toFixed(1)}g`;
+                carbSpan.textContent = `Carb.: ${macros.carbs_g.toFixed(1)}g`;
+                fatSpan.textContent = `Fat: ${macros.fat_g.toFixed(1)}g`;
+            } else {
+                // Clear display
+                kcalSpan.textContent = '';
+                protSpan.textContent = '';
+                carbSpan.textContent = '';
+                fatSpan.textContent = '';
+            }
+        }
+
 
         calculateNutritionBtn.addEventListener('click', async () => {
             if (currentMeal.length === 0) {
@@ -237,14 +350,21 @@
         function displayNutritionResults(name, totalNutrition, per100gNutrition, ingredientsList) {
             resultMealName.textContent = name;
 
-            // Update Current Meal List to include details from calculation (optional, but can be good for verification)
-            currentMealList.innerHTML = ''; // Clear existing list
-            ingredientsList.forEach(item => {
-                 const li = document.createElement('li');
-                 li.textContent = `${item.name}: ${item.weight_g}g (Cals: ${item.calories.toFixed(1)}, P: ${item.protein_g.toFixed(1)}g, C: ${item.carbs_g.toFixed(1)}g, F: ${item.fat_g.toFixed(1)}g)`;
-                 currentMealList.appendChild(li);
+            // Store calculated macros for each ingredient back into the currentMeal array
+            // ingredientsList comes from the server and contains calculated values per item
+            ingredientsList.forEach((calculatedItem, index) => {
+                if (currentMeal[index] && currentMeal[index].name === calculatedItem.name) {
+                    currentMeal[index].calculatedMacros = {
+                        calories: calculatedItem.calories,
+                        protein_g: calculatedItem.protein_g,
+                        carbs_g: calculatedItem.carbs_g,
+                        fat_g: calculatedItem.fat_g
+                    };
+                }
             });
 
+            // Re-render the current meal list to show these new macros
+            renderCurrentMeal();
 
             totalNutritionTableBody.innerHTML = ''; // Clear previous results
             populateTable(totalNutritionTableBody, [
@@ -289,6 +409,35 @@
             fetchIngredients();
             renderCurrentMeal(); // To show "No ingredients added yet."
         });
+
+        // Global Shutdown server button event listener
+        const globalShutdownBtn = document.getElementById('globalShutdownBtn');
+        if (globalShutdownBtn) {
+            globalShutdownBtn.addEventListener('click', async function() {
+                try {
+                    await fetch('/shutdown-server');
+                    globalShutdownBtn.innerHTML = "&check;";
+                    globalShutdownBtn.title = "Server shutting down";
+                    globalShutdownBtn.disabled = true;
+                    // Display a message on the page
+                    let msgDiv = document.createElement('div');
+                    msgDiv.style.position = 'fixed';
+                    msgDiv.style.top = '50%';
+                    msgDiv.style.left = '50%';
+                    msgDiv.style.transform = 'translate(-50%, -50%)';
+                    msgDiv.style.padding = '20px';
+                    msgDiv.style.backgroundColor = 'lightgreen';
+                    msgDiv.style.border = '1px solid green';
+                    msgDiv.style.borderRadius = '5px';
+                    msgDiv.style.zIndex = '1001';
+                    msgDiv.textContent = 'Server shutdown initiated. You may close this window.';
+                    document.body.appendChild(msgDiv);
+                } catch (error) {
+                    console.error('Error sending shutdown command:', error);
+                    alert('Failed to send shutdown command. The server might already be down or unreachable.');
+                }
+            });
+        }
     </script>
 </body>
 </html>
