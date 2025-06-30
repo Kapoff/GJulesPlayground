@@ -21,6 +21,24 @@ def add_ingredient_page():
     # Serves the add_ingredient.html page
     return render_template('add_ingredient.html')
 
+@app.route('/shutdown-server', methods=['GET'])
+def shutdown_server():
+    shutdown_func = request.environ.get('werkzeug.server.shutdown')
+    if shutdown_func is None:
+        # This might happen if not running with Werkzeug's dev server
+        # (e.g., when deployed with Gunicorn, uWSGI)
+        # For simplicity in a dev environment, we'll assume Werkzeug.
+        app.logger.warning("Shutdown function not found in request environment. Server may not shut down.")
+        return "Error: Could not shut down server. Shutdown function not available. Please close the terminal/script manually.", 500
+
+    try:
+        app.logger.info("Server shutdown requested via /shutdown-server endpoint.")
+        shutdown_func()
+        return "Server is shutting down... You can close this page. Please also close the CLI window if it's still open."
+    except Exception as e:
+        app.logger.error(f"Error during server shutdown: {e}")
+        return f"Error during server shutdown: {e}. Please close the terminal/script manually.", 500
+
 @app.route('/track_meal')
 def track_meal_page():
     # Serves the track_meal.html page
