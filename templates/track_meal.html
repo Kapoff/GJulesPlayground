@@ -204,56 +204,66 @@
             }
             currentMeal.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.classList.add('meal-item-row'); // For flex styling
+                li.classList.add('meal-item-row'); // This will be the grid container
 
-                // Left part: Name and Weight
-                const leftDiv = document.createElement('div');
-                leftDiv.classList.add('meal-item-left');
-
+                // 1. Ingredient Name
                 const nameSpan = document.createElement('span');
                 nameSpan.classList.add('meal-item-name');
                 nameSpan.textContent = item.name;
                 nameSpan.title = item.name; // For full name tooltip on hover
-                leftDiv.appendChild(nameSpan);
+                li.appendChild(nameSpan);
+
+                // 2. Weight Input Group (Input + Unit)
+                const weightGroup = document.createElement('div');
+                weightGroup.classList.add('meal-item-weight-group');
 
                 const weightInput = document.createElement('input');
-                // Removed duplicate const weightInput = document.createElement('input');
                 weightInput.type = 'number';
                 weightInput.value = item.weight;
-                weightInput.min = "0.1"; // Smallest reasonable weight
+                weightInput.min = "0.1";
                 weightInput.step = "0.1";
-                weightInput.classList.add('editable-weight-input'); // For styling
-                weightInput.dataset.index = index; // Store index for easy update
+                weightInput.classList.add('editable-weight-input');
+                weightInput.dataset.index = index;
                 weightInput.addEventListener('change', (event) => handleWeightChange(event, index));
-                leftDiv.appendChild(weightInput);
+                weightGroup.appendChild(weightInput);
 
                 const unitSpan = document.createElement('span');
                 unitSpan.classList.add('meal-item-unit');
                 unitSpan.textContent = "g";
-                leftDiv.appendChild(unitSpan);
-                li.appendChild(leftDiv);
+                weightGroup.appendChild(unitSpan);
+                li.appendChild(weightGroup);
 
-                // Middle part: Calculated Macros (initially empty)
-                const macrosDiv = document.createElement('div');
-                macrosDiv.classList.add('meal-item-macros');
-                macrosDiv.id = `macros-${index}`; // To target for updates
-                // Structure for macros: Kcal: X, Prot: Y, Carb: Z, Fat: A
-                macrosDiv.innerHTML = `
-                    <span class="macro-kcal"></span>
-                    <span class="macro-prot"></span>
-                    <span class="macro-carb"></span>
-                    <span class="macro-fat"></span>
-                `;
-                li.appendChild(macrosDiv);
-                // Populate macros if they exist (e.g., after calculation)
+                // 3. Kcal
+                const kcalSpan = document.createElement('span');
+                kcalSpan.classList.add('meal-item-macro', 'macro-kcal');
+                li.appendChild(kcalSpan);
+
+                // 4. Protein
+                const protSpan = document.createElement('span');
+                protSpan.classList.add('meal-item-macro', 'macro-prot');
+                li.appendChild(protSpan);
+
+                // 5. Carbs
+                const carbSpan = document.createElement('span');
+                carbSpan.classList.add('meal-item-macro', 'macro-carb');
+                li.appendChild(carbSpan);
+
+                // 6. Fat
+                const fatSpan = document.createElement('span');
+                fatSpan.classList.add('meal-item-macro', 'macro-fat');
+                li.appendChild(fatSpan);
+
+                // Populate macros if they exist
+                // The updateMacrosDisplay function will now need to find these individual spans
                 if (item.calculatedMacros) {
-                    updateMacrosDisplay(macrosDiv, item.calculatedMacros);
+                    updateMacrosDisplay(li, item.calculatedMacros); // Pass the whole li to find spans within
+                } else {
+                    updateMacrosDisplay(li, null); // Clear them if no data
                 }
 
-
-                // Right part: Remove Button
+                // 7. Remove Button
                 const removeBtn = document.createElement('button');
-                removeBtn.classList.add('meal-item-remove-btn');
+                removeBtn.classList.add('meal-item-remove-btn'); // Keep existing class for basic styling if any
                 removeBtn.innerHTML = '&times;'; // 'X' symbol
                 removeBtn.title = 'Remove ingredient';
                 removeBtn.onclick = () => {
@@ -281,10 +291,14 @@
                 // Recalculate and update macros for this specific item
                 currentMeal[index].calculatedMacros = calculateSingleIngredientMacros(currentMeal[index].originalData, newWeight);
 
-                // Update the display for this specific item's macros
-                const macrosDiv = document.getElementById(`macros-${index}`);
-                if (macrosDiv) {
-                    updateMacrosDisplay(macrosDiv, currentMeal[index].calculatedMacros);
+                // Update the display for this specific item's macros by finding the li
+                const listItem = document.querySelector(`#currentMealList .meal-item-row:nth-child(${index + 1})`);
+                if (listItem) { // Check if listItem is found
+                    updateMacrosDisplay(listItem, currentMeal[index].calculatedMacros);
+                } else {
+                    // Fallback to re-rendering the whole list if direct update fails, though less ideal
+                    console.warn(`Could not find list item for index ${index} to update macros directly. Re-rendering list.`);
+                    renderCurrentMeal();
                 }
 
                 // If overall meal results were visible, they are now potentially stale
@@ -303,11 +317,12 @@
             }
         }
 
-        function updateMacrosDisplay(macrosDiv, macros) {
-            const kcalSpan = macrosDiv.querySelector('.macro-kcal');
-            const protSpan = macrosDiv.querySelector('.macro-prot');
-            const carbSpan = macrosDiv.querySelector('.macro-carb');
-            const fatSpan = macrosDiv.querySelector('.macro-fat');
+        // Update this function to work with the new flat structure within the li
+        function updateMacrosDisplay(listItem, macros) {
+            const kcalSpan = listItem.querySelector('.macro-kcal');
+            const protSpan = listItem.querySelector('.macro-prot');
+            const carbSpan = listItem.querySelector('.macro-carb');
+            const fatSpan = listItem.querySelector('.macro-fat');
 
             if (macros) {
                 kcalSpan.textContent = `kcal: ${macros.calories.toFixed(0)}`;
@@ -316,10 +331,10 @@
                 fatSpan.textContent = `Fat: ${macros.fat_g.toFixed(1)}g`;
             } else {
                 // Clear display
-                kcalSpan.textContent = '';
-                protSpan.textContent = '';
-                carbSpan.textContent = '';
-                fatSpan.textContent = '';
+                if(kcalSpan) kcalSpan.textContent = '';
+                if(protSpan) protSpan.textContent = '';
+                if(carbSpan) carbSpan.textContent = '';
+                if(fatSpan) fatSpan.textContent = '';
             }
         }
 
