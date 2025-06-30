@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from nutrition_tracker.ingredient import Ingredient
 from nutrition_tracker.database import IngredientDatabase
+from nutrition_tracker.meal import Meal # Added Meal import
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -12,8 +13,28 @@ db = IngredientDatabase(filepath=DB_FILEPATH)
 
 @app.route('/')
 def index():
+    # Serves the main landing page
+    return render_template('index.html')
+
+@app.route('/add_ingredient')
+def add_ingredient_page():
     # Serves the add_ingredient.html page
     return render_template('add_ingredient.html')
+
+@app.route('/track_meal')
+def track_meal_page():
+    # Serves the track_meal.html page
+    return render_template('track_meal.html')
+
+@app.route('/api/get_ingredients', methods=['GET'])
+def get_ingredients_api():
+    ingredients = db.list_ingredients()
+    ingredient_details = []
+    for name in ingredients:
+        ing = db.get_ingredient(name)
+        if ing:
+            ingredient_details.append(ing.to_dict())
+    return jsonify(ingredient_details)
 
 @app.route('/api/add_ingredient', methods=['POST'])
 def add_ingredient_api():
@@ -59,6 +80,62 @@ def add_ingredient_api():
     except Exception as e:
         app.logger.error(f"Unexpected error in add_ingredient_api: {e}")
         return jsonify({"success": False, "message": "An unexpected error occurred."}), 500
+
+@app.route('/api/calculate_meal', methods=['POST'])
+def calculate_meal_api():
+    try:
+        data = request.get_json()
+        meal_name = data.get('name', 'My Meal')
+        ingredient_inputs = data.get('ingredients') # Expected: list of {'name': str, 'weight': float}
+
+        if not ingredient_inputs:
+            return jsonify({"success": False, "message": "No ingredients provided for the meal."}), 400
+
+        meal = Meal(name=meal_name)
+        missing_ingredients = []
+
+        for item in ingredient_inputs:
+            ingredient_name = item.get('name')
+            weight = item.get('weight')
+
+            if not ingredient_name or weight is None:
+                return jsonify({"success": False, "message": "Invalid ingredient data: name and weight are required."}), 400
+
+            try:
+                weight_float = float(weight)
+                if weight_float < 0:
+                     return jsonify({"success": False, "message": f"Weight for {ingredient_name} cannot be negative."}), 400
+            except ValueError:
+                return jsonify({"success": False, "message": f"Invalid weight format for {ingredient_name}."}), 400
+
+
+            ingredient_obj = db.get_ingredient(ingredient_name)
+            if not ingredient_obj:
+                missing_ingredients.append(ingredient_name)
+            else:
+                meal.add_ingredient(ingredient_obj, weight_float)
+
+        if missing_ingredients:
+            return jsonify({"success": False, "message": f"The following ingredients were not found in the database: {', '.join(missing_ingredients)}. Please add them first."}), 404
+
+        if not meal._ingredients: # Accessing protected member, but Meal class uses it
+             return jsonify({"success": False, "message": "Meal is empty or contains only missing ingredients."}), 400
+
+
+        return jsonify({
+            "success": True,
+            "meal_name": meal.name,
+            "total_nutrition": meal.get_total_nutrition(),
+            "nutrition_per_100g": meal.get_nutrition_per_100g(),
+            "ingredients_list": meal.get_ingredients_list() # Send back the detailed list
+        })
+
+    except ValueError as e:
+        app.logger.error(f"ValueError in calculate_meal_api: {e}")
+        return jsonify({"success": False, "message": str(e)}), 400
+    except Exception as e:
+        app.logger.error(f"Unexpected error in calculate_meal_api: {e}")
+        return jsonify({"success": False, "message": "An unexpected error occurred during meal calculation."}), 500
 
 if __name__ == '__main__':
     # Create the nutrition_tracker package directory and __init__.py if they don't exist

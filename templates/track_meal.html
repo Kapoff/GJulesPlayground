@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Meal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Track Your Meal</h1>
+            <nav>
+                <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('add_ingredient_page') }}" class="nav-link">Add Ingredient</a>
+            </nav>
+        </header>
+
+        <section id="mealCompositionSection">
+            <h2>Compose Your Meal</h2>
+            <div class="form-group">
+                <label for="mealName">Meal Name:</label>
+                <input type="text" id="mealName" name="mealName" value="My Custom Meal">
+            </div>
+
+            <div class="ingredient-selector">
+                <div class="form-group">
+                    <label for="ingredientSearch">Select Ingredient:</label>
+                    <input type="text" id="ingredientSearch" placeholder="Search ingredients...">
+                    <select id="ingredientSelect" name="ingredientSelect" size="5"></select>
+                </div>
+                <div class="form-group">
+                    <label for="ingredientWeight">Weight (grams):</label>
+                    <input type="number" id="ingredientWeight" name="ingredientWeight" min="0" step="0.1" placeholder="e.g., 150">
+                </div>
+                <button id="addIngredientToMealBtn" class="button">Add to Meal</button>
+            </div>
+            <div id="mealIngredientStatus" class="status-message" style="margin-top: 10px;"></div>
+        </section>
+
+        <section id="currentMealSection">
+            <h2>Current Meal Ingredients</h2>
+            <ul id="currentMealList">
+                <!-- Ingredients will be listed here by JavaScript -->
+            </ul>
+            <button id="calculateNutritionBtn" class="button primary-action" disabled>Calculate Nutrition</button>
+        </section>
+
+        <section id="nutritionResultsSection" style="display:none;">
+            <h2>Nutritional Information for <span id="resultMealName"></span></h2>
+            <div id="nutritionStatus" class="status-message"></div>
+            <h3>Total Meal Nutrition:</h3>
+            <table id="totalNutritionTable">
+                <thead>
+                    <tr>
+                        <th>Nutrient</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+
+            <h3>Nutrition per 100g of Meal:</h3>
+            <table id="per100gNutritionTable">
+                <thead>
+                    <tr>
+                        <th>Nutrient</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        const mealNameInput = document.getElementById('mealName');
+        const ingredientSearch = document.getElementById('ingredientSearch');
+        const ingredientSelect = document.getElementById('ingredientSelect');
+        const ingredientWeightInput = document.getElementById('ingredientWeight');
+        const addIngredientToMealBtn = document.getElementById('addIngredientToMealBtn');
+        const currentMealList = document.getElementById('currentMealList');
+        const calculateNutritionBtn = document.getElementById('calculateNutritionBtn');
+        const nutritionResultsSection = document.getElementById('nutritionResultsSection');
+        const resultMealName = document.getElementById('resultMealName');
+        const totalNutritionTableBody = document.getElementById('totalNutritionTable').getElementsByTagName('tbody')[0];
+        const per100gNutritionTableBody = document.getElementById('per100gNutritionTable').getElementsByTagName('tbody')[0];
+        const mealIngredientStatus = document.getElementById('mealIngredientStatus');
+        const nutritionStatus = document.getElementById('nutritionStatus');
+
+        let availableIngredients = [];
+        let currentMeal = []; // Array of {name, weight, originalData}
+
+        async function fetchIngredients() {
+            try {
+                const response = await fetch('/api/get_ingredients');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                availableIngredients = await response.json();
+                populateIngredientSelect(availableIngredients);
+            } catch (error) {
+                console.error('Error fetching ingredients:', error);
+                mealIngredientStatus.textContent = 'Error loading ingredients. Please try refreshing.';
+                mealIngredientStatus.className = 'status-message error';
+            }
+        }
+
+        function populateIngredientSelect(ingredients) {
+            ingredientSelect.innerHTML = ''; // Clear existing options
+            ingredients.forEach(ing => {
+                const option = document.createElement('option');
+                option.value = ing.name;
+                option.textContent = `${ing.name} (C:${ing.calories} P:${ing.protein} C:${ing.carbs} F:${ing.fat} per 100g)`;
+                ingredientSelect.appendChild(option);
+            });
+        }
+
+        ingredientSearch.addEventListener('input', () => {
+            const searchTerm = ingredientSearch.value.toLowerCase();
+            const filteredIngredients = availableIngredients.filter(ing => ing.name.toLowerCase().includes(searchTerm));
+            populateIngredientSelect(filteredIngredients);
+        });
+
+        addIngredientToMealBtn.addEventListener('click', () => {
+            const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
+            const weight = parseFloat(ingredientWeightInput.value);
+
+            mealIngredientStatus.textContent = '';
+            mealIngredientStatus.className = 'status-message';
+
+            if (!selectedOption) {
+                mealIngredientStatus.textContent = 'Please select an ingredient.';
+                mealIngredientStatus.className = 'status-message error';
+                return;
+            }
+            if (isNaN(weight) || weight <= 0) {
+                mealIngredientStatus.textContent = 'Please enter a valid positive weight.';
+                mealIngredientStatus.className = 'status-message error';
+                return;
+            }
+
+            const ingredientName = selectedOption.value;
+            const ingredientData = availableIngredients.find(ing => ing.name === ingredientName);
+
+            if (ingredientData) {
+                currentMeal.push({ name: ingredientName, weight: weight, originalData: ingredientData });
+                renderCurrentMeal();
+                ingredientWeightInput.value = ''; // Clear weight input
+                calculateNutritionBtn.disabled = false;
+                mealIngredientStatus.textContent = `${ingredientName} added to meal.`;
+                mealIngredientStatus.className = 'status-message success';
+                 setTimeout(() => { mealIngredientStatus.textContent = ''; mealIngredientStatus.className = 'status-message';}, 3000);
+            } else {
+                mealIngredientStatus.textContent = 'Selected ingredient not found in available list.';
+                mealIngredientStatus.className = 'status-message error';
+            }
+        });
+
+        function renderCurrentMeal() {
+            currentMealList.innerHTML = ''; // Clear existing list
+            if (currentMeal.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No ingredients added yet.';
+                currentMealList.appendChild(li);
+                calculateNutritionBtn.disabled = true;
+                return;
+            }
+            currentMeal.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} - ${item.weight}g`;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.classList.add('remove-btn');
+                removeBtn.onclick = () => {
+                    currentMeal.splice(index, 1);
+                    renderCurrentMeal();
+                     if (currentMeal.length === 0) calculateNutritionBtn.disabled = true;
+                };
+                li.appendChild(removeBtn);
+                currentMealList.appendChild(li);
+            });
+        }
+
+        calculateNutritionBtn.addEventListener('click', async () => {
+            if (currentMeal.length === 0) {
+                nutritionStatus.textContent = 'Cannot calculate nutrition for an empty meal.';
+                nutritionStatus.className = 'status-message error';
+                nutritionResultsSection.style.display = 'block';
+                return;
+            }
+
+            const mealPayload = {
+                name: mealNameInput.value || 'My Custom Meal',
+                ingredients: currentMeal.map(item => ({ name: item.name, weight: item.weight }))
+            };
+
+            nutritionStatus.textContent = 'Calculating...';
+            nutritionStatus.className = 'status-message info';
+            nutritionResultsSection.style.display = 'block';
+
+
+            try {
+                const response = await fetch('/api/calculate_meal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(mealPayload)
+                });
+
+                const result = await response.json();
+                nutritionStatus.textContent = ''; // Clear calculating message
+
+                if (response.ok && result.success) {
+                    displayNutritionResults(result.meal_name, result.total_nutrition, result.nutrition_per_100g, result.ingredients_list);
+                } else {
+                    nutritionStatus.textContent = result.message || 'Error calculating nutrition.';
+                    nutritionStatus.className = 'status-message error';
+                    totalNutritionTableBody.innerHTML = '';
+                    per100gNutritionTableBody.innerHTML = '';
+                }
+            } catch (error) {
+                console.error('Error calculating nutrition:', error);
+                nutritionStatus.textContent = 'An unexpected error occurred. Please try again.';
+                nutritionStatus.className = 'status-message error';
+                totalNutritionTableBody.innerHTML = '';
+                per100gNutritionTableBody.innerHTML = '';
+            }
+        });
+
+        function displayNutritionResults(name, totalNutrition, per100gNutrition, ingredientsList) {
+            resultMealName.textContent = name;
+
+            // Update Current Meal List to include details from calculation (optional, but can be good for verification)
+            currentMealList.innerHTML = ''; // Clear existing list
+            ingredientsList.forEach(item => {
+                 const li = document.createElement('li');
+                 li.textContent = `${item.name}: ${item.weight_g}g (Cals: ${item.calories.toFixed(1)}, P: ${item.protein_g.toFixed(1)}g, C: ${item.carbs_g.toFixed(1)}g, F: ${item.fat_g.toFixed(1)}g)`;
+                 currentMealList.appendChild(li);
+            });
+
+
+            totalNutritionTableBody.innerHTML = ''; // Clear previous results
+            populateTable(totalNutritionTableBody, [
+                { nutrient: 'Total Weight', amount: `${totalNutrition.total_weight_g.toFixed(1)}g` },
+                { nutrient: 'Total Calories', amount: `${totalNutrition.total_calories.toFixed(1)} kcal` },
+                { nutrient: 'Total Protein', amount: `${totalNutrition.total_protein_g.toFixed(1)}g` },
+                { nutrient: 'Total Carbs', amount: `${totalNutrition.total_carbs_g.toFixed(1)}g` },
+                { nutrient: 'Total Fat', amount: `${totalNutrition.total_fat_g.toFixed(1)}g` }
+            ]);
+
+            per100gNutritionTableBody.innerHTML = ''; // Clear previous results
+            if (per100gNutrition.calories_per_100g !== null) {
+                populateTable(per100gNutritionTableBody, [
+                    { nutrient: 'Calories per 100g', amount: `${per100gNutrition.calories_per_100g.toFixed(1)} kcal` },
+                    { nutrient: 'Protein per 100g', amount: `${per100gNutrition.protein_per_100g.toFixed(1)}g` },
+                    { nutrient: 'Carbs per 100g', amount: `${per100gNutrition.carbs_per_100g.toFixed(1)}g` },
+                    { nutrient: 'Fat per 100g', amount: `${per100gNutrition.fat_per_100g.toFixed(1)}g` }
+                ]);
+            } else {
+                 const row = per100gNutritionTableBody.insertRow();
+                 const cell = row.insertCell();
+                 cell.colSpan = 2;
+                 cell.textContent = 'N/A (meal weight is zero)';
+            }
+            nutritionResultsSection.style.display = 'block';
+            nutritionStatus.textContent = 'Calculation successful!';
+            nutritionStatus.className = 'status-message success';
+        }
+
+        function populateTable(tbody, data) {
+            data.forEach(item => {
+                const row = tbody.insertRow();
+                const cellNutrient = row.insertCell();
+                const cellAmount = row.insertCell();
+                cellNutrient.textContent = item.nutrient;
+                cellAmount.textContent = item.amount;
+            });
+        }
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchIngredients();
+            renderCurrentMeal(); // To show "No ingredients added yet."
+        });
+    </script>
+</body>
+</html>
