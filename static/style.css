@@ -275,11 +275,16 @@ section:last-child {
     background-color: #f9f9f9;
 }
 
-/* New styles for currentMealList items */
+/* CSS Grid styles for currentMealList items */
 #currentMealList li.meal-item-row {
-    display: flex;
-    align-items: center; /* Vertically align items in the row */
-    padding: 8px 5px;  /* Reduced horizontal padding for more content space */
+    display: grid;
+    /* Columns: Name | Weight Group | Kcal | Prot | Carb | Fat | Remove Btn */
+    /* Using fr units for macros to distribute space, specific widths for others. */
+    /* Name (minmax) | Weight(auto) | 4x Macros (1fr each) | Button(auto) */
+    grid-template-columns: minmax(120px, 1.5fr) auto repeat(4, minmax(70px, 1fr)) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 5px;
     border-bottom: 1px solid #f0f0f0;
     min-height: 40px;
 }
@@ -287,76 +292,53 @@ section:last-child {
     border-bottom: none;
 }
 
-/* Contains Name + Weight Input + Unit */
-.meal-item-left-group {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0; /* Prevent this group from shrinking too much */
-    /* Takes specific width, name inside will flex */
-    flex-basis: 280px; /* Adjust as needed, approx for Name + Weight + Unit */
-    min-width: 220px; /* Ensure it doesn't get too small */
-}
-
-.meal-item-name {
+.meal-item-name { /* Grid Column 1 */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex-grow: 1; /* Allow name to take available space within left-group */
-    min-width: 50px; /* Prevent name from disappearing completely */
-    margin-right: 8px;
-    line-height: 1.5;
     font-weight: 500;
+    line-height: 1.5;
+    padding-right: 5px; /* Space before weight group */
+}
+
+.meal-item-weight-group { /* Grid Column 2 */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Align content to its start */
 }
 
 .editable-weight-input {
-    width: 60px; /* Fixed width for weight input */
+    width: 60px;
     padding: 6px;
     text-align: right;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9em;
-    margin-right: 2px; /* Small space before unit */
-    flex-shrink: 0; /* Don't shrink weight input */
+    margin-right: 2px;
 }
 
 .meal-item-unit {
     font-size: 0.9em;
     color: #555;
-    margin-right: 10px; /* Space after 'g' before macros start */
-    flex-shrink: 0;
+    padding-right: 5px; /* Some space after 'g' */
 }
 
-/* Contains all individual macro spans */
-.meal-item-macros {
-    flex-grow: 1; /* Allow macros section to take remaining space */
-    display: flex;
-    align-items: center;
+.meal-item-macro { /* Common style for Grid Columns 3,4,5,6 */
     font-size: 0.85em;
     color: #333;
-    overflow: hidden; /* Hide if too many macros for space */
-    white-space: nowrap;
-    padding: 0 5px;
-    justify-content: flex-start; /* Align macro items to the start of their container */
-}
-
-.meal-item-macros span { /* Individual macro (e.g., kcal: 100) */
-    min-width: 80px;   /* Give each macro item a min-width for column effect */
-    flex-basis: 90px;  /* Base width for each macro column */
-    flex-shrink: 0;    /* Prevent shrinking for consistent columns */
-    margin-right: 8px;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Ellipsis if individual macro text is too long */
-    text-align: left;  /* Align text to left within each macro span */
+    text-overflow: ellipsis;
+    text-align: left;
+    padding: 0 3px;
 }
-.meal-item-macros span:last-child {
-    margin-right: 0;
-}
-.meal-item-macros span:empty {
-    display: none;
+.meal-item-macro:empty::before { /* Show a placeholder for empty macros */
+    content: "-";
+    color: #aaa;
 }
 
-.meal-item-remove-btn {
+
+.meal-item-remove-btn { /* Grid Column 7 */
     background-color: transparent;
     color: #cc0000;
     border: none;
@@ -366,13 +348,12 @@ section:last-child {
     font-size: 1.2em;
     font-weight: bold;
     cursor: pointer;
-    margin-left: auto; /* Push to the far right, after macros */
-    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
     transition: background-color 0.2s ease, color 0.2s ease;
+    justify-self: flex-end;
 }
 
 .meal-item-remove-btn:hover {
@@ -381,6 +362,8 @@ section:last-child {
 }
 
 #currentMealList li:empty {
+    display: block;
+    text-align: center;
     justify-content: center;
     color: #777;
     font-style: italic;
