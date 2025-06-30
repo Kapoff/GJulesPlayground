@@ -1,15 +1,19 @@
 from flask import Flask, render_template, request, jsonify
 from nutrition_tracker.ingredient import Ingredient
 from nutrition_tracker.database import IngredientDatabase
-from nutrition_tracker.meal import Meal # Added Meal import
+from nutrition_tracker.meal import Meal
+from nutrition_tracker.history_manager import MealHistoryManager # Added MealHistoryManager import
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# Configure the database filepath
-# This should match the one used in main_cli.py if you want them to share data
+# Configure database filepaths
 DB_FILEPATH = "ingredient_database.json"
+MEAL_HISTORY_FILEPATH = "meal_history.json"
+
+# Initialize managers
 db = IngredientDatabase(filepath=DB_FILEPATH)
+history_manager = MealHistoryManager(filepath=MEAL_HISTORY_FILEPATH)
 
 @app.route('/')
 def index():
@@ -140,12 +144,28 @@ def calculate_meal_api():
              return jsonify({"success": False, "message": "Meal is empty or contains only missing ingredients."}), 400
 
 
+        total_nutrition = meal.get_total_nutrition()
+        nutrition_per_100g = meal.get_nutrition_per_100g()
+        ingredients_list_details = meal.get_ingredients_list() # Detailed list with calculated nutrition for each ingredient
+
+        # Save to history if requested
+        should_save_meal = data.get('save_meal', False) # Expect a boolean in the request
+        if should_save_meal:
+            # We need the ingredient list as {name, weight} for history, not the detailed one
+            ingredients_for_history = [{"name": item.get('name'), "weight_g": item.get('weight')} for item in ingredient_inputs]
+            history_manager.add_meal(
+                meal_name=meal.name,
+                ingredients_used=ingredients_for_history,
+                total_nutrition=total_nutrition,
+                nutrition_per_100g=nutrition_per_100g
+            )
+
         return jsonify({
             "success": True,
             "meal_name": meal.name,
-            "total_nutrition": meal.get_total_nutrition(),
-            "nutrition_per_100g": meal.get_nutrition_per_100g(),
-            "ingredients_list": meal.get_ingredients_list() # Send back the detailed list
+            "total_nutrition": total_nutrition,
+            "nutrition_per_100g": nutrition_per_100g,
+            "ingredients_list": ingredients_list_details
         })
 
     except ValueError as e:
@@ -154,6 +174,44 @@ def calculate_meal_api():
     except Exception as e:
         app.logger.error(f"Unexpected error in calculate_meal_api: {e}")
         return jsonify({"success": False, "message": "An unexpected error occurred during meal calculation."}), 500
+
+
+# --- Meal History API Endpoints ---
+
+@app.route('/api/get_meal_history', methods=['GET'])
+def get_meal_history_api():
+    try:
+        meal_summaries = history_manager.get_all_meals_summary()
+        return jsonify({"success": True, "history": meal_summaries})
+    except Exception as e:
+        app.logger.error(f"Error in get_meal_history_api: {e}")
+        return jsonify({"success": False, "message": "Failed to retrieve meal history."}), 500
+
+@app.route('/api/get_meal_detail/<meal_id>', methods=['GET'])
+def get_meal_detail_api(meal_id):
+    try:
+        meal_detail = history_manager.get_meal_by_id(meal_id)
+        if meal_detail:
+            return jsonify({"success": True, "meal": meal_detail})
+        else:
+            return jsonify({"success": False, "message": "Meal not found."}), 404
+    except Exception as e:
+        app.logger.error(f"Error in get_meal_detail_api for meal_id {meal_id}: {e}")
+        return jsonify({"success": False, "message": "Failed to retrieve meal details."}), 500
+
+@app.route('/api/delete_meal/<meal_id>', methods=['DELETE'])
+def delete_meal_api(meal_id):
+    try:
+        if history_manager.delete_meal(meal_id):
+            return jsonify({"success": True, "message": "Meal deleted successfully."})
+        else:
+            # This could mean meal not found, or delete operation failed for other reasons
+            # history_manager.delete_meal returns False if meal_id not found.
+            return jsonify({"success": False, "message": "Meal not found or could not be deleted."}), 404
+    except Exception as e:
+        app.logger.error(f"Error in delete_meal_api for meal_id {meal_id}: {e}")
+        return jsonify({"success": False, "message": "Failed to delete meal."}), 500
+
 
 if __name__ == '__main__':
     # Create the nutrition_tracker package directory and __init__.py if they don't exist

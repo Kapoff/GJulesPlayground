@@ -369,6 +369,116 @@ section:last-child {
     font-style: italic;
 }
 
+/* Modal Styling */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1001; /* Sit on top - higher than shutdown button tooltip */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    padding-top: 60px; /* Location of the box */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* 5% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 700px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    position: relative;
+}
+
+.modal-close-btn {
+    color: #aaa;
+    float: right; /* Keep using float for simple close button positioning */
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute; /* Position relative to modal-content */
+    top: 10px;
+    right: 15px;
+}
+
+.modal-close-btn:hover,
+.modal-close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal h2 { /* Style for modal title */
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.modal-body {
+    padding-top: 15px;
+}
+.modal-body ul {
+    list-style: none;
+    padding-left: 0;
+}
+.modal-body ul li {
+    padding: 5px 0;
+    border-bottom: 1px dashed #eee;
+}
+.modal-body ul li:last-child {
+    border-bottom: none;
+}
+.modal-body strong { /* For labels within the modal, like "Ingredient:" */
+    display: inline-block;
+    min-width: 100px;
+}
+
+
+/* Action Dropdown/Menu for "..." button */
+.meal-actions-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    z-index: 1002; /* Higher than modal backdrop, but modal content itself will be higher */
+    min-width: 160px;
+}
+
+.meal-actions-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    text-align: left;
+    background-color: transparent;
+    color: #333;
+    border: none;
+    border-bottom: 1px solid #f0f0f0; /* Separator */
+    font-size: 0.9em;
+    margin-top: 0; /* Override general button margin */
+}
+.meal-actions-menu button:last-child {
+    border-bottom: none;
+}
+
+.meal-actions-menu button:hover {
+    background-color: #f5f5f5;
+}
+
+.meal-actions-menu button.delete-action {
+    color: #e74c3c; /* Red for delete */
+}
+.meal-actions-menu button.delete-action:hover {
+    background-color: #fdecea; /* Light red for delete hover */
+    color: #c0392b;
+}
+
 
 #nutritionResultsSection table {
     width: 100%;
@@ -492,4 +602,79 @@ section:last-child {
 .global-shutdown-button:hover .tooltip-text {
     visibility: visible;
     opacity: 1;
+}
+
+/* Meal History List Styling */
+#mealHistorySection {
+    margin-top: 40px;
+}
+
+#mealHistoryList {
+    list-style: none;
+    padding: 0;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+#mealHistoryList li.meal-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+#mealHistoryList li.meal-history-item:last-child {
+    border-bottom: none;
+}
+#mealHistoryList li.meal-history-item:hover {
+    background-color: #f9f9f9;
+}
+
+#mealHistoryList li.meal-history-item .meal-history-main {
+    flex-grow: 1;
+    display: flex; /* For aligning name, timestamp, preview */
+    flex-direction: column; /* Stack them vertically */
+    align-items: flex-start;
+}
+#mealHistoryList li.meal-history-item .meal-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1em;
+    margin-bottom: 3px;
+}
+#mealHistoryList li.meal-history-item .meal-timestamp {
+    font-size: 0.8em;
+    color: #777;
+    margin-bottom: 3px;
+}
+#mealHistoryList li.meal-history-item .meal-preview {
+    font-size: 0.9em;
+    color: #555;
+}
+
+
+#mealHistoryList li.meal-history-item .meal-actions-btn {
+    background: transparent;
+    border: none;
+    color: #555;
+    font-size: 1.5em; /* Larger ellipsis */
+    padding: 5px;
+    margin-left: 15px;
+    cursor: pointer;
+    border-radius: 50%;
+    line-height: 1;
+}
+#mealHistoryList li.meal-history-item .meal-actions-btn:hover {
+    background-color: #e0e0e0;
+    color: #000;
+}
+
+/* Style for the generic "No history" or "Loading" li */
+#mealHistoryList li:not(.meal-history-item) {
+    padding: 15px;
+    text-align: center;
+    color: #777;
+    font-style: italic;
 }
