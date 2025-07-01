@@ -18,9 +18,9 @@ body {
 }
 
 .container {
-    width: 100%;
-    max-width: 800px; /* Slightly wider for more complex layouts */
-    margin: 20px auto; /* Add some margin top/bottom */
+    width: 90%; /* Use percentage for fluidity */
+    max-width: 1200px; /* Increase max-width for wider screens */
+    margin: 20px auto;
     background: #ffffff;
     padding: 25px 30px; /* More padding */
     border-radius: 10px;
@@ -573,17 +573,22 @@ section:last-child {
 }
 
 .ingredient-item-macros-column {
-    flex: 2 1 250px; /* Takes more space for macros */
-    min-width: 200px;
+    flex: 3 1 300px; /* Increased basis and flex-grow to give more space */
+    min-width: 280px; /* Increased min-width */
     display: flex;
-    flex-wrap: wrap; /* Allow macros to wrap if needed on small screens */
-    gap: 8px; /* Spacing between macro items */
+    /* flex-wrap: wrap; */ /* Remove wrap to keep them on one line if possible */
+    justify-content: flex-start; /* Align items to the start */
+    gap: 12px; /* Increased gap for better separation */
     font-size: 0.9em;
     color: #444;
+    white-space: nowrap; /* Apply to the container to suggest no wrapping for its children */
+    overflow: hidden; /* Hide overflow if it still happens, though ideally it fits */
+    text-overflow: ellipsis; /* Show ellipsis if container overflows */
 }
 .ingredient-item-macros-column span {
     /* Each span is a macro, e.g., "Cal: XX" */
-    white-space: nowrap; /* Prevent individual macros from wrapping */
+    /* white-space: nowrap; */ /* No longer needed here if parent has it and we want overflow on parent */
+    display: inline-block; /* Helps with potential spacing or alignment issues */
 }
 
 .ingredient-item-actions-column {
@@ -609,6 +614,63 @@ section:last-child {
 .ingredient-item-remove-btn:hover {
     background-color: #fdecea; /* Light red background on hover */
     color: #c0392b; /* Darker red on hover */
+}
+
+/* Styles for ... action menu */
+.action-menu-container {
+    position: relative; /* For absolute positioning of the menu */
+    display: inline-block; /* Or flex, depending on how it sits in actions-column */
+}
+
+.ellipsis-button {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 2px 8px; /* Small padding */
+    font-size: 1.1em; /* Make ellipsis slightly larger if needed */
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+}
+.ellipsis-button:hover {
+    background-color: #f0f0f0;
+    border-color: #bbb;
+}
+.ellipsis-button:focus {
+    outline: 1px solid #3498db; /* Focus ring */
+}
+
+.action-menu {
+    display: none; /* Hidden by default, shown by JS */
+    position: absolute;
+    right: 0; /* Align to the right of the button */
+    top: 100%; /* Position below the button */
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 10; /* Ensure it's above other row content */
+    min-width: 100px; /* Minimum width for the menu */
+    padding: 5px 0; /* Padding for the ul */
+}
+.action-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.action-menu ul li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+.action-menu ul li:hover {
+    background-color: #f0f0f0;
+}
+.action-menu ul li[data-action="delete"]:hover {
+    background-color: #f8d7da; /* Light red for delete hover */
+    color: #721c24;
 }
 
 

@@ -133,18 +133,70 @@
                 // Actions
                 const actionsDiv = document.createElement('div');
                 actionsDiv.classList.add('ingredient-item-actions-column');
+                actionsDiv.classList.add('action-menu-container'); // For relative positioning of the menu
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.classList.add('ingredient-item-remove-btn'); // New class, to be styled like meal-item-remove-btn
-                deleteBtn.innerHTML = '&times;'; // 'X' symbol
-                deleteBtn.title = `Delete ${ing.name}`;
-                deleteBtn.onclick = () => handleDeleteIngredient(ing.name);
-                actionsDiv.appendChild(deleteBtn);
+                const ellipsisBtn = document.createElement('button');
+                ellipsisBtn.classList.add('ellipsis-button');
+                ellipsisBtn.innerHTML = '&hellip;'; // Ellipsis character
+                ellipsisBtn.title = `Actions for ${ing.name}`;
+                actionsDiv.appendChild(ellipsisBtn);
+
+                const actionMenu = document.createElement('div');
+                actionMenu.classList.add('action-menu');
+                actionMenu.style.display = 'none'; // Initially hidden
+                actionMenu.innerHTML = `
+                    <ul>
+                        <li data-action="edit" data-ingredient-name="${ing.name}">Edit</li>
+                        <li data-action="delete" data-ingredient-name="${ing.name}">Delete</li>
+                    </ul>
+                `;
+                actionsDiv.appendChild(actionMenu);
                 listItem.appendChild(actionsDiv);
+
+                // Add event listener to the ellipsis button
+                ellipsisBtn.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent click from bubbling to document listener immediately
+                    toggleActionMenu(actionMenu);
+                });
+
+                // Add event listeners to menu items
+                actionMenu.querySelectorAll('li[data-action]').forEach(item => {
+                    item.addEventListener('click', (event) => {
+                        const action = event.target.dataset.action;
+                        const itemName = event.target.dataset.ingredientName; // Name is stored on the item
+                        if (action === 'delete') {
+                            handleDeleteIngredient(itemName);
+                        } else if (action === 'edit') {
+                            alert(`Edit functionality for "${itemName}" is not yet implemented.`);
+                            console.log(`Edit action triggered for: ${itemName}`);
+                        }
+                        closeAllActionMenus(); // Close menu after action
+                    });
+                });
 
                 existingIngredientsList.appendChild(listItem);
             });
         }
+
+        function toggleActionMenu(menu) {
+            const currentlyOpen = menu.style.display === 'block';
+            closeAllActionMenus(); // Close any other open menus
+            if (!currentlyOpen) {
+                menu.style.display = 'block';
+            }
+        }
+
+        function closeAllActionMenus() {
+            document.querySelectorAll('.action-menu').forEach(m => {
+                m.style.display = 'none';
+            });
+        }
+
+        // Global click listener to close menus when clicking outside
+        document.addEventListener('click', () => {
+            closeAllActionMenus();
+        });
+
 
         async function handleDeleteIngredient(ingredientName) {
             if (confirm(`Are you sure you want to delete "${ingredientName}"? This action cannot be undone.`)) {
