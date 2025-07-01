@@ -186,6 +186,14 @@ button:disabled {
 }
 
 /* Landing page specific styles */
+.welcome-message {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 1.05em;
+    color: #333;
+    padding: 0 15px; /* Add some horizontal padding if container is wide */
+}
+
 .navigation-links {
     list-style: none;
     padding: 0;
