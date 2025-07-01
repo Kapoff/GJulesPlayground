@@ -48,11 +48,8 @@
             <ul id="currentMealList">
                 <!-- Ingredients will be listed here by JavaScript -->
             </ul>
-            <div class="form-group" style="margin-top: 15px; display: flex; align-items: center;">
-                <input type="checkbox" id="saveMealToHistoryCheckbox" name="saveMealToHistoryCheckbox" checked style="width: auto; margin-right: 10px;">
-                <label for="saveMealToHistoryCheckbox" style="margin-bottom: 0; font-weight: normal;">Save this meal to history</label>
-            </div>
-            <button id="saveAndLogMealBtn" class="button primary-action" disabled>Save and Log Meal</button>
+            <!-- Checkbox removed -->
+            <button id="saveAndLogMealBtn" class="button primary-action" disabled style="margin-top: 20px;">Save and Log Meal</button>
         </section>
 
         <section id="nutritionResultsSection" style="display:none;">
@@ -446,7 +443,7 @@
                  cell.textContent = 'N/A (meal weight is zero)';
             }
             nutritionResultsSection.style.display = 'block';
-            if (nutritionStatus) nutritionStatus.textContent = 'Live Preview - Recalculate with button to save.';
+            if (nutritionStatus) nutritionStatus.textContent = 'Values are updated on the fly - Press the Save button to add your meal to the log';
             if (nutritionStatus) nutritionStatus.className = 'status-message info';
         }
 
@@ -459,11 +456,11 @@
                 return;
             }
 
-            const saveToHistoryCheckbox = document.getElementById('saveMealToHistoryCheckbox');
+            // const saveToHistoryCheckbox = document.getElementById('saveMealToHistoryCheckbox'); // Checkbox removed
             const mealPayload = {
                 name: mealNameInput.value || 'My Custom Meal',
                 ingredients: currentMeal.map(item => ({ name: item.name, weight: item.weight })),
-                save_meal: saveToHistoryCheckbox ? saveToHistoryCheckbox.checked : false
+                save_meal: true // Always true now
             };
 
             nutritionStatus.textContent = 'Calculating...';
@@ -485,6 +482,9 @@
 
                 if (response.ok && result.success) {
                     displayNutritionResults(result.meal_name, result.total_nutrition, result.nutrition_per_100g, result.ingredients_list);
+                    if (mealPayload.save_meal) { // Check if the meal was intended to be saved
+                        fetchMealHistoryForTrackPage(); // Refresh history list on this page
+                    }
                 } else {
                     nutritionStatus.textContent = result.message || 'Error calculating nutrition.';
                     nutritionStatus.className = 'status-message error';
@@ -630,9 +630,16 @@
                 const mainContent = document.createElement('div');
                 mainContent.classList.add('meal-history-main');
                 mainContent.innerHTML = `
-                    <strong class="meal-name">${meal.name || 'Unnamed Meal'}</strong>
-                    <span class="meal-timestamp">Saved: ${formattedTimestamp}</span>
-                    <span class="meal-preview"> | kcal: ${meal.total_calories ? meal.total_calories.toFixed(0) : 'N/A'}</span>
+                    <div class="meal-history-line1">
+                        <strong class="meal-name">${meal.name || 'Unnamed Meal'}</strong>
+                        <span class="meal-timestamp">Saved: ${formattedTimestamp}</span>
+                    </div>
+                    <div class="meal-history-line2 meal-preview">
+                        <span>kcal: ${meal.total_calories ? meal.total_calories.toFixed(0) : 'N/A'}</span>
+                        <span>Prot: ${meal.total_protein_g ? meal.total_protein_g.toFixed(1) : 'N/A'}g</span>
+                        <span>Carb: ${meal.total_carbs_g ? meal.total_carbs_g.toFixed(1) : 'N/A'}g</span>
+                        <span>Fat: ${meal.total_fat_g ? meal.total_fat_g.toFixed(1) : 'N/A'}g</span>
+                    </div>
                 `;
                 listItem.appendChild(mainContent);
 

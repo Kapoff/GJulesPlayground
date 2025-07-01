@@ -24,7 +24,6 @@
             <h2>Meal History</h2>
             <ul id="mealHistoryList">
                 <!-- Meal history will be populated here by JavaScript -->
-                <li>Loading meal history...</li>
             </ul>
             <div id="mealHistoryStatus" class="status-message" style="margin-top:10px;"></div>
         </section>
@@ -98,9 +97,16 @@
                 const mainContent = document.createElement('div');
                 mainContent.classList.add('meal-history-main');
                 mainContent.innerHTML = `
-                    <strong class="meal-name">${meal.name || 'Unnamed Meal'}</strong>
-                    <span class="meal-timestamp">Saved: ${formattedTimestamp}</span>
-                    <span class="meal-preview"> | kcal: ${meal.total_calories ? meal.total_calories.toFixed(0) : 'N/A'}</span>
+                    <div class="meal-history-line1">
+                        <strong class="meal-name">${meal.name || 'Unnamed Meal'}</strong>
+                        <span class="meal-timestamp">Saved: ${formattedTimestamp}</span>
+                    </div>
+                    <div class="meal-history-line2 meal-preview">
+                        <span>kcal: ${meal.total_calories ? meal.total_calories.toFixed(0) : 'N/A'}</span>
+                        <span>Prot: ${meal.total_protein_g ? meal.total_protein_g.toFixed(1) : 'N/A'}g</span>
+                        <span>Carb: ${meal.total_carbs_g ? meal.total_carbs_g.toFixed(1) : 'N/A'}g</span>
+                        <span>Fat: ${meal.total_fat_g ? meal.total_fat_g.toFixed(1) : 'N/A'}g</span>
+                    </div>
                 `;
                 listItem.appendChild(mainContent);
 
