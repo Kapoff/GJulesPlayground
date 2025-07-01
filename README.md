@@ -1,30 +1,49 @@
 # Nutrition Tracker
 
-This project is a simple nutrition tracker with a command-line interface (CLI) and a web interface for managing ingredients.
+This project is a nutrition tracker that helps users calculate the calorie and macronutrient content of their meals. It offers both a command-line interface (CLI) for core data management and a web interface for a more user-friendly experience.
 
 ## Features
 
-*   Add, view, and remove ingredients (name, calories, protein, carbs, fat per 100g) via CLI.
-*   Create meals and calculate their total nutritional value using ingredients from the database via CLI.
-*   Add new ingredients via a web interface.
+**CLI Features:**
+*   Manage ingredients: Add, view, and remove ingredients (name, calories, protein, carbs, fat per 100g).
+*   Create meals: Combine ingredients from the database to create meals and calculate their total nutritional value.
+
+**Web Interface Features:**
+*   **Landing Page (`/`):** Provides an overview of the application and navigation to other sections.
+*   **Add Ingredients Page (`/add_ingredient`):** Allows users to easily add new ingredients to the shared database.
+*   **Track Meal Page (`/track_meal`):** Enables users to:
+    *   Select ingredients from the database.
+    *   Specify the weight of each ingredient in a meal.
+    *   Calculate and display the nutritional values (calories, protein, carbs, fat) for a 100g portion of the prepared meal.
+    *   Calculate and display the total nutritional values for the entire meal.
 
 ## Project Structure
 
 ```
 .
-├── app.py                    # Flask web application
+├── .gitignore                # Specifies intentionally untracked files that Git should ignore
+├── app.py                    # Flask web application for the UI
 ├── main_cli.py               # Command-line interface application
 ├── nutrition_tracker/        # Core logic for nutrition tracking
-│   ├── __init__.py
+│   ├── __init__.py           # Makes Python treat the directory as a package
 │   ├── database.py           # Manages the ingredient database (JSON file)
 │   ├── ingredient.py         # Defines the Ingredient class
 │   └── meal.py               # Defines the Meal class
-├── static/                   # Static files for the web interface
-│   └── style.css             # CSS for the web page
+├── static/                   # Static files (CSS, JS, images) for the web interface
+│   └── style.css             # CSS styles for the web pages
 ├── templates/                # HTML templates for the web interface
-│   └── add_ingredient.html   # HTML page for adding ingredients
+│   ├── add_ingredient.html   # Web page for adding new ingredients to the database
+│   ├── index.html            # Landing page for the web application
+│   ├── track_meal.html       # Web page for creating a meal and calculating its nutrition
+├── tests/                    # Directory for automated tests
+│   ├── __init__.py           # Makes Python treat the directory as a package
+│   ├── test_database.py      # Tests for the database module
+│   ├── test_ingredient.py    # Tests for the ingredient module
+│   └── test_meal.py          # Tests for the meal module
 ├── ingredient_database.json  # Default database file (created on first run if not present)
-├── requirements.txt          # Python dependencies
+├── requirements.txt          # Python dependencies for the project
+├── start_app.bat             # Batch script to start the application on Windows
+├── start_app.sh              # Shell script to start the application on macOS/Linux
 └── README.md                 # This file
 ```
 
@@ -65,7 +84,7 @@ This project is a simple nutrition tracker with a command-line interface (CLI) a
 
 ### Simplified Launch (Recommended)
 
-After completing the installation steps (including creating the virtual environment and installing dependencies), you can use the provided launch scripts for a one-click experience:
+After completing the installation steps (including creating the virtual environment and installing dependencies), you can use the provided launch scripts for a streamlined experience:
 
 *   **On Windows:**
     1.  Navigate to the project directory in File Explorer.
@@ -81,25 +100,31 @@ After completing the installation steps (including creating the virtual environm
         ./start_app.sh
         ```
 
-These scripts will:
+These scripts will typically:
 1.  Activate the virtual environment.
-2.  Start the Flask web server (for adding ingredients) in the background. You can access it at `http://127.0.0.1:5000/` (or specifically the `/add_ingredient` page). The web interface includes a "Shutdown Server" button which will stop the web server.
+2.  Start the Flask web server in the background. You can access the web interface at `http://127.0.0.1:5000/`.
+    *   Landing Page: `http://127.0.0.1:5000/`
+    *   Add Ingredient Page: `http://127.0.0.1:5000/add_ingredient`
+    *   Track Meal Page: `http://127.0.0.1:5000/track_meal`
+    The web interface includes a "Shutdown Server" button on the `/add_ingredient` page, which will stop the web server.
 3.  Start the main CLI application in the current terminal window.
-4.  When you exit the CLI (e.g., by using the 'exit' option in the CLI or pressing Ctrl+C), the script will attempt to stop the Flask server (if it's still running) and deactivate the virtual environment. If you've used the "Shutdown Server" button in the web UI, the Flask server will already be stopped.
+4.  When you exit the CLI (e.g., by using the 'exit' option in the CLI or pressing Ctrl+C), the script will attempt to stop the Flask server (if it's still running and not shut down via the UI) and deactivate the virtual environment.
 
 ### Manual Launch (Alternative)
 
 If you prefer to run the components separately:
 
-#### Running the Web Interface (for adding ingredients)
+#### Running the Web Interface
 
 1.  **Ensure your virtual environment is activated (see Installation).**
 2.  **Run the Flask application:**
     ```bash
     python app.py
     ```
-3.  Open your web browser and go to: `http://127.0.0.1:5000/`
-    You can fill in the form to add new ingredients to the `ingredient_database.json` file.
+3.  Open your web browser and navigate to the desired page:
+    *   Landing Page: `http://127.0.0.1:5000/`
+    *   Add Ingredient Page: `http://127.0.0.1:5000/add_ingredient`
+    *   Track Meal Page: `http://127.0.0.1:5000/track_meal`
 
 #### Running the Command-Line Interface (CLI)
 
@@ -110,6 +135,27 @@ If you prefer to run the components separately:
     ```
     The CLI will provide options to manage ingredients and create meals. The CLI and the web interface share the same `ingredient_database.json` file, so ingredients added via the web UI will be available in the CLI and vice-versa.
 
+## Web Interface Details
+
+The web interface provides a user-friendly way to interact with some of the application's features:
+
+*   **Landing Page (`/` or `index.html`)**
+    *   **Purpose:** Serves as the main entry point for the web application.
+    *   **Functionality:** Provides a brief introduction to the Nutrition Tracker and links to the "Add Ingredient" and "Track Meal" pages.
+
+*   **Add Ingredient Page (`/add_ingredient`)**
+    *   **Purpose:** Allows users to add new ingredients to the central `ingredient_database.json`.
+    *   **Functionality:** Users can input the ingredient's name, calories, protein, carbohydrates, and fat content (all per 100g). Upon submission, the ingredient is saved to the database. This page also features a "Shutdown Server" button to stop the Flask web server.
+
+*   **Track Meal Page (`/track_meal`)**
+    *   **Purpose:** Enables users to compose a meal from existing ingredients and view its nutritional breakdown.
+    *   **Functionality:**
+        *   Users can select multiple ingredients from a list populated from the `ingredient_database.json`.
+        *   For each selected ingredient, users specify the amount (in grams) used in the meal.
+        *   The application then calculates and displays:
+            *   The nutritional information (calories, protein, carbs, fat) for a 100g portion of the *total meal mixture*.
+            *   The total nutritional information for the *entire meal* based on the specified ingredient weights.
+
 ## Data Storage
 
-Ingredient data is stored in a JSON file named `ingredient_database.json` in the root of the project directory.
+Ingredient data is stored in a JSON file named `ingredient_database.json` in the root of the project directory. This file is shared between the CLI and the web interface.
