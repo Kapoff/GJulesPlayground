@@ -724,77 +724,112 @@ section:last-child {
     opacity: 1;
 }
 
-/* Meal History List Styling */
-#mealHistorySection {
-    margin-top: 40px;
-}
-
-#mealHistoryList {
-    list-style: none;
-    padding: 0;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    background-color: #fff;
-}
-
-#mealHistoryList li.meal-history-item {
+/* Styles for Add Ingredient Page Two-Column Layout and Table */
+.page-layout {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.2s ease;
-}
-#mealHistoryList li.meal-history-item:last-child {
-    border-bottom: none;
-}
-#mealHistoryList li.meal-history-item:hover {
-    background-color: #f9f9f9;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 30px; /* Increased gap for better separation */
 }
 
-#mealHistoryList li.meal-history-item .meal-history-main {
-    flex-grow: 1;
-    display: flex; /* For aligning name, timestamp, preview */
-    flex-direction: column; /* Stack them vertically */
-    align-items: flex-start;
+.column-left {
+    flex: 1 1 350px; /* Flex grow, shrink, basis */
+    min-width: 300px; /* Minimum width before wrapping or squishing too much */
+    /* max-width: 400px; /* Max width for the form - can be removed if flex-basis is good */
 }
-#mealHistoryList li.meal-history-item .meal-name {
-    font-weight: 600;
-    color: #333;
-    font-size: 1.1em;
-    margin-bottom: 3px;
+
+.column-right {
+    flex: 2 1 400px; /* Takes more space, basis allows it to be substantial */
+    min-width: 320px;
+    overflow-x: auto; /* For responsiveness if table is too wide */
 }
-#mealHistoryList li.meal-history-item .meal-timestamp {
-    font-size: 0.8em;
-    color: #777;
-    margin-bottom: 3px;
-}
-#mealHistoryList li.meal-history-item .meal-preview {
-    font-size: 0.9em;
-    color: #555;
+
+.column-left h2, .column-right h2 {
+    margin-top: 0; /* Remove default top margin if it's the first element */
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1.4em; /* Slightly smaller than main page h1 */
+    text-align: left; /* Align section headers to the left */
 }
 
 
-#mealHistoryList li.meal-history-item .meal-actions-btn {
-    background: transparent;
-    border: none;
-    color: #555;
-    font-size: 1.5em; /* Larger ellipsis */
-    padding: 5px;
-    margin-left: 15px;
+.ingredients-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0; /* Adjusted as h2 has bottom margin now */
+    font-size: 0.95em; /* Slightly smaller font for table data */
+}
+
+.ingredients-table th, .ingredients-table td {
+    border: 1px solid #e0e0e0; /* Consistent border color */
+    padding: 10px 12px; /* Slightly more padding */
+    text-align: left;
+    vertical-align: middle;
+}
+
+.ingredients-table th {
+    background-color: #f7f7f7; /* Match other table headers */
+    font-weight: 600; /* Consistent with other th */
+    white-space: nowrap; /* Prevent headers from wrapping */
+}
+
+.ingredients-table tr:nth-child(even) {
+    background-color: #fdfdfd; /* Consistent with other tables */
+}
+.ingredients-table tr:hover td {
+    background-color: #f1f1f1; /* Hover effect for rows */
+}
+
+.ingredients-table .action-button-placeholder { /* If you use a ... button */
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 8px;
     cursor: pointer;
-    border-radius: 50%;
-    line-height: 1;
+    font-weight: bold;
+    display: inline-block; /* To allow margin/padding */
 }
-#mealHistoryList li.meal-history-item .meal-actions-btn:hover {
+.ingredients-table .action-button-placeholder:hover {
     background-color: #e0e0e0;
-    color: #000;
 }
 
-/* Style for the generic "No history" or "Loading" li */
-#mealHistoryList li:not(.meal-history-item) {
-    padding: 15px;
-    text-align: center;
-    color: #777;
-    font-style: italic;
+.ingredients-table .delete-button {
+    color: #e74c3c;
+    cursor: pointer;
+    text-decoration: none; /* Remove underline by default */
+    font-weight: 500;
+    /* display: block; */ /* Remove if not needed for dropdown */
+    /* margin-top: 5px; */ /* Remove if not needed for dropdown */
+    padding: 3px 6px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ingredients-table .delete-button:hover {
+    color: #fff; /* White text on hover */
+    background-color: #c0392b; /* Darker red background on hover */
+    text-decoration: none;
+}
+
+.form-group small {
+    display: block;
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 5px;
+}
+
+
+/* Responsive adjustments for two-column layout */
+@media (max-width: 768px) { /* Adjust breakpoint as needed */
+    .page-layout {
+        flex-direction: column; /* Stack columns */
+        gap: 20px;
+    }
+    .column-left, .column-right {
+        flex-basis: auto; /* Reset basis for stacked layout */
+        max-width: 100%; /* Allow full width when stacked */
+    }
+    .column-right {
+        margin-top: 20px; /* Add some space when stacked below form */
+    }
 }

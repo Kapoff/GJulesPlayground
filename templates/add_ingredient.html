@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add New Ingredient</title>
+    <title>Manage Ingredients</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -14,52 +14,164 @@
 
     <div class="container">
         <header>
-            <h1>Add New Ingredient</h1>
+            <h1>Manage Ingredients</h1>
             <nav>
                 <a href="{{ url_for('index') }}" class="nav-link">Home</a>
                 <a href="{{ url_for('track_meal_page') }}" class="nav-link">Track Meal</a>
             </nav>
         </header>
-        <form id="addIngredientForm">
-            <div class="form-group">
-                <label for="name">Ingredient Name:</label>
-                <input type="text" id="name" name="name" required>
+
+        <div class="page-layout">
+            <div class="column-left">
+                <h2>Add New Ingredient</h2>
+                <form id="addIngredientForm">
+                    <div class="form-group">
+                        <label for="name">Ingredient Name:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="portion_size">Portion Size (grams):</label>
+                        <input type="number" id="portion_size" name="portion_size" value="100" required>
+                        <small>Nutritional info below should be for this portion size.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="calories">Calories (for specified portion):</label>
+                        <input type="number" id="calories" name="calories" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="protein">Protein (g for specified portion):</label>
+                        <input type="number" id="protein" name="protein" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="carbs">Carbohydrates (g for specified portion):</label>
+                        <input type="number" id="carbs" name="carbs" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fat">Fat (g for specified portion):</label>
+                        <input type="number" id="fat" name="fat" step="0.1" required>
+                    </div>
+
+                    <button type="submit">Save Ingredient</button>
+                </form>
+                <div id="statusMessage" class="status-message" style="margin-top:15px;"></div>
             </div>
 
-            <div class="form-group">
-                <label for="portion_size">Portion Size (grams):</label>
-                <input type="number" id="portion_size" name="portion_size" value="100" required>
+            <div class="column-right">
+                <h2>Existing Ingredients</h2>
+                <div id="ingredientsListContainer">
+                    <table class="ingredients-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Calories (per 100g)</th>
+                                <th>Protein (g)</th>
+                                <th>Carbs (g)</th>
+                                <th>Fat (g)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ingredientsTableBody">
+                            <!-- Ingredient rows will be populated here by JavaScript -->
+                            <tr><td colspan="6" style="text-align:center;">Loading ingredients...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="deleteStatusMessage" class="status-message" style="margin-top:15px;"></div>
             </div>
-
-            <div class="form-group">
-                <label for="calories">Calories (for specified portion):</label>
-                <input type="number" id="calories" name="calories" step="0.1" required>
-            </div>
-
-            <div class="form-group">
-                <label for="protein">Protein (g for specified portion):</label>
-                <input type="number" id="protein" name="protein" step="0.1" required>
-            </div>
-
-            <div class="form-group">
-                <label for="carbs">Carbohydrates (g for specified portion):</label>
-                <input type="number" id="carbs" name="carbs" step="0.1" required>
-            </div>
-
-            <div class="form-group">
-                <label for="fat">Fat (g for specified portion):</label>
-                <input type="number" id="fat" name="fat" step="0.1" required>
-            </div>
-
-            <button type="submit">Save Ingredient</button>
-        </form>
-        <div id="statusMessage" class="status-message"></div>
-        <!-- Old shutdown section removed -->
+        </div>
     </div>
 
     <script>
-        // Global Shutdown server button event listener
+        const addIngredientForm = document.getElementById('addIngredientForm');
+        const statusMessageEl = document.getElementById('statusMessage');
+        const ingredientsTableBody = document.getElementById('ingredientsTableBody');
+        const deleteStatusMessageEl = document.getElementById('deleteStatusMessage');
         const globalShutdownBtn = document.getElementById('globalShutdownBtn');
+
+        // Fetch and display existing ingredients
+        async function fetchAndDisplayIngredients() {
+            ingredientsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading ingredients...</td></tr>';
+            deleteStatusMessageEl.textContent = '';
+            deleteStatusMessageEl.className = 'status-message';
+
+            try {
+                const response = await fetch('/api/get_ingredients');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const ingredients = await response.json();
+                renderIngredientsTable(ingredients);
+            } catch (error) {
+                console.error('Error fetching ingredients:', error);
+                ingredientsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: red;">Error loading ingredients.</td></tr>';
+            }
+        }
+
+        function renderIngredientsTable(ingredients) {
+            ingredientsTableBody.innerHTML = ''; // Clear existing rows
+
+            if (ingredients.length === 0) {
+                ingredientsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No ingredients found in the database.</td></tr>';
+                return;
+            }
+
+            ingredients.forEach(ing => {
+                const row = ingredientsTableBody.insertRow();
+                row.insertCell().textContent = ing.name;
+                // Values are already per 100g from Ingredient.to_dict()
+                row.insertCell().textContent = ing.calories.toFixed(1);
+                row.insertCell().textContent = ing.protein.toFixed(1);
+                row.insertCell().textContent = ing.carbs.toFixed(1);
+                row.insertCell().textContent = ing.fat.toFixed(1);
+
+                const actionsCell = row.insertCell();
+                // For now, "..." button is conceptual, direct delete link/button
+                // const actionButton = document.createElement('button');
+                // actionButton.classList.add('action-button');
+                // actionButton.textContent = '...';
+                // actionsCell.appendChild(actionButton);
+
+                // Add delete link/button
+                const deleteLink = document.createElement('span');
+                deleteLink.textContent = 'Delete';
+                deleteLink.classList.add('delete-button'); // For styling
+                deleteLink.style.cursor = 'pointer';
+                deleteLink.onclick = () => handleDeleteIngredient(ing.name);
+                actionsCell.appendChild(deleteLink);
+            });
+        }
+
+        async function handleDeleteIngredient(ingredientName) {
+            if (confirm(`Are you sure you want to delete "${ingredientName}"? This action cannot be undone.`)) {
+                deleteStatusMessageEl.textContent = '';
+                deleteStatusMessageEl.className = 'status-message';
+                try {
+                    const response = await fetch(`/api/delete_ingredient/${encodeURIComponent(ingredientName)}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        deleteStatusMessageEl.textContent = result.message;
+                        deleteStatusMessageEl.classList.add('success');
+                        fetchAndDisplayIngredients(); // Refresh the list
+                    } else {
+                        deleteStatusMessageEl.textContent = result.message || 'Error deleting ingredient.';
+                        deleteStatusMessageEl.classList.add('error');
+                    }
+                } catch (error) {
+                    console.error('Error deleting ingredient:', error);
+                    deleteStatusMessageEl.textContent = 'An error occurred while deleting. Please try again.';
+                    deleteStatusMessageEl.classList.add('error');
+                }
+            }
+        }
+
+        // Global Shutdown server button event listener
         if (globalShutdownBtn) {
             globalShutdownBtn.addEventListener('click', async function() {
                 // Optionally, add a message div near the button or use alerts
@@ -95,11 +207,10 @@
             });
         }
 
-        document.getElementById('addIngredientForm').addEventListener('submit', async function(event) {
+        addIngredientForm.addEventListener('submit', async function(event) {
             event.preventDefault(); // Prevent default form submission
 
             const form = event.target;
-            const statusMessageEl = document.getElementById('statusMessage');
             statusMessageEl.textContent = ''; // Clear previous messages
             statusMessageEl.className = 'status-message'; // Reset class
 
@@ -160,6 +271,7 @@
                     statusMessageEl.textContent = result.message;
                     statusMessageEl.classList.add('success');
                     form.reset(); // Clear the form
+                    fetchAndDisplayIngredients(); // Refresh the list
                 } else {
                     statusMessageEl.textContent = result.message || 'An error occurred.';
                     statusMessageEl.classList.add('error');
@@ -170,6 +282,9 @@
                 statusMessageEl.classList.add('error');
             }
         });
+
+        // Initial load of ingredients
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayIngredients);
     </script>
 </body>
 </html>
