@@ -1,12 +1,12 @@
 # Nutrition Tracker
 
-This project is a simple nutrition tracker with a command-line interface (CLI) and a web interface for managing ingredients.
+This project is a simple nutrition tracker with a web interface for managing ingredients and calculating meals calories and macros. It is mostly meant to help with meal prep and calculating calorie and macro values for a portion size. 
 
 ## Features
 
-*   Add, view, and remove ingredients (name, calories, protein, carbs, fat per 100g) via CLI.
-*   Create meals and calculate their total nutritional value using ingredients from the database via CLI.
-*   Add new ingredients via a web interface.
+*   Add, view, and remove ingredients (name, calories, protein, carbs, fat per 100g).
+*   Create meals and calculate their total and per portion nutritional value using ingredients from the database.
+*   Add new ingredients to your database.
 
 ## Project Structure
 
@@ -83,7 +83,7 @@ After completing the installation steps (including creating the virtual environm
 
 These scripts will:
 1.  Activate the virtual environment.
-2.  Start the Flask web server (for adding ingredients) in the background. You can access it at `http://127.0.0.1:5000/` (or specifically the `/add_ingredient` page). The web interface includes a "Shutdown Server" button which will stop the web server.
+2.  Start the Flask web server (for adding ingredients) in the background. You can access it at `http://127.0.0.1:5000/` . The web interface includes a "Shutdown Server" button on the top right which will stop the web server.
 3.  Start the main CLI application in the current terminal window.
 4.  When you exit the CLI (e.g., by using the 'exit' option in the CLI or pressing Ctrl+C), the script will attempt to stop the Flask server (if it's still running) and deactivate the virtual environment. If you've used the "Shutdown Server" button in the web UI, the Flask server will already be stopped.
 
