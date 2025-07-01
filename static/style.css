@@ -488,3 +488,113 @@ section:last-child {
     visibility: visible;
     opacity: 1;
 }
+
+/* Styles for Add Ingredient Page Two-Column Layout and Table */
+.page-layout {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 30px; /* Increased gap for better separation */
+}
+
+.column-left {
+    flex: 1 1 350px; /* Flex grow, shrink, basis */
+    min-width: 300px; /* Minimum width before wrapping or squishing too much */
+    /* max-width: 400px; /* Max width for the form - can be removed if flex-basis is good */
+}
+
+.column-right {
+    flex: 2 1 400px; /* Takes more space, basis allows it to be substantial */
+    min-width: 320px;
+    overflow-x: auto; /* For responsiveness if table is too wide */
+}
+
+.column-left h2, .column-right h2 {
+    margin-top: 0; /* Remove default top margin if it's the first element */
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1.4em; /* Slightly smaller than main page h1 */
+    text-align: left; /* Align section headers to the left */
+}
+
+
+.ingredients-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0; /* Adjusted as h2 has bottom margin now */
+    font-size: 0.95em; /* Slightly smaller font for table data */
+}
+
+.ingredients-table th, .ingredients-table td {
+    border: 1px solid #e0e0e0; /* Consistent border color */
+    padding: 10px 12px; /* Slightly more padding */
+    text-align: left;
+    vertical-align: middle;
+}
+
+.ingredients-table th {
+    background-color: #f7f7f7; /* Match other table headers */
+    font-weight: 600; /* Consistent with other th */
+    white-space: nowrap; /* Prevent headers from wrapping */
+}
+
+.ingredients-table tr:nth-child(even) {
+    background-color: #fdfdfd; /* Consistent with other tables */
+}
+.ingredients-table tr:hover td {
+    background-color: #f1f1f1; /* Hover effect for rows */
+}
+
+.ingredients-table .action-button-placeholder { /* If you use a ... button */
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 8px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block; /* To allow margin/padding */
+}
+.ingredients-table .action-button-placeholder:hover {
+    background-color: #e0e0e0;
+}
+
+.ingredients-table .delete-button {
+    color: #e74c3c;
+    cursor: pointer;
+    text-decoration: none; /* Remove underline by default */
+    font-weight: 500;
+    /* display: block; */ /* Remove if not needed for dropdown */
+    /* margin-top: 5px; */ /* Remove if not needed for dropdown */
+    padding: 3px 6px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.ingredients-table .delete-button:hover {
+    color: #fff; /* White text on hover */
+    background-color: #c0392b; /* Darker red background on hover */
+    text-decoration: none;
+}
+
+.form-group small {
+    display: block;
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 5px;
+}
+
+
+/* Responsive adjustments for two-column layout */
+@media (max-width: 768px) { /* Adjust breakpoint as needed */
+    .page-layout {
+        flex-direction: column; /* Stack columns */
+        gap: 20px;
+    }
+    .column-left, .column-right {
+        flex-basis: auto; /* Reset basis for stacked layout */
+        max-width: 100%; /* Allow full width when stacked */
+    }
+    .column-right {
+        margin-top: 20px; /* Add some space when stacked below form */
+    }
+}

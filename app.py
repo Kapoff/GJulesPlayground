@@ -19,7 +19,26 @@ def index():
 @app.route('/add_ingredient')
 def add_ingredient_page():
     # Serves the add_ingredient.html page
+    # No need to pass ingredients here if we fetch via JS using /api/get_ingredients
     return render_template('add_ingredient.html')
+
+@app.route('/api/delete_ingredient/<ingredient_name>', methods=['DELETE'])
+def delete_ingredient_api(ingredient_name):
+    try:
+        app.logger.info(f"Attempting to delete ingredient: {ingredient_name}")
+        ingredient_to_delete = db.get_ingredient(ingredient_name)
+
+        if ingredient_to_delete is None:
+            app.logger.warning(f"Ingredient '{ingredient_name}' not found for deletion.")
+            return jsonify({"success": False, "message": "Ingredient not found."}), 404
+
+        db.remove_ingredient(ingredient_name)
+        db.save_ingredients() # Persist changes
+        app.logger.info(f"Ingredient '{ingredient_name}' deleted successfully.")
+        return jsonify({"success": True, "message": f"Ingredient '{ingredient_name}' deleted successfully."})
+    except Exception as e:
+        app.logger.error(f"Error deleting ingredient '{ingredient_name}': {e}")
+        return jsonify({"success": False, "message": "An error occurred while deleting the ingredient."}), 500
 
 @app.route('/shutdown-server', methods=['GET'])
 def shutdown_server():
