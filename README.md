@@ -1,12 +1,12 @@
 # Nutrition Tracker
 
-This project is a nutrition tracker that helps users calculate the calorie and macronutrient content of their meals. It offers both a command-line interface (CLI) for core data management and a web interface for a more user-friendly experience.
+This project is a simple nutrition tracker with a web interface for managing ingredients and calculating meals calories and macros. It is mostly meant to help with meal prep and calculating calorie and macro values for a portion size. 
 
 ## Features
 
-**CLI Features:**
-*   Manage ingredients: Add, view, and remove ingredients (name, calories, protein, carbs, fat per 100g).
-*   Create meals: Combine ingredients from the database to create meals and calculate their total nutritional value.
+*   Add, view, and remove ingredients (name, calories, protein, carbs, fat per 100g).
+*   Create meals and calculate their total and per portion nutritional value using ingredients from the database.
+*   Add new ingredients to your database.
 
 **Web Interface Features:**
 *   **Landing Page (`/`):** Provides an overview of the application and navigation to other sections.
@@ -102,11 +102,10 @@ After completing the installation steps (including creating the virtual environm
 
 These scripts will typically:
 1.  Activate the virtual environment.
-2.  Start the Flask web server in the background. You can access the web interface at `http://127.0.0.1:5000/`.
+2.  Start the Flask web server (for adding ingredients) in the background. You can access it at `http://127.0.0.1:5000/` . The web interface includes a "Shutdown Server" button on the top right which will stop the web server.
     *   Landing Page: `http://127.0.0.1:5000/`
     *   Add Ingredient Page: `http://127.0.0.1:5000/add_ingredient`
     *   Track Meal Page: `http://127.0.0.1:5000/track_meal`
-    The web interface includes a "Shutdown Server" button on the `/add_ingredient` page, which will stop the web server.
 3.  Start the main CLI application in the current terminal window.
 4.  When you exit the CLI (e.g., by using the 'exit' option in the CLI or pressing Ctrl+C), the script will attempt to stop the Flask server (if it's still running and not shut down via the UI) and deactivate the virtual environment.
 
