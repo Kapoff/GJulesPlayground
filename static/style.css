@@ -500,14 +500,14 @@ section:last-child {
 }
 
 .column-left {
-    flex: 1 1 350px; /* Flex grow, shrink, basis */
-    min-width: 300px; /* Minimum width before wrapping or squishing too much */
-    /* max-width: 400px; /* Max width for the form - can be removed if flex-basis is good */
+    flex: 1 1 300px; /* Flex grow, shrink, basis. Reduced basis from 350px */
+    min-width: 280px; /* Adjusted min-width slightly */
+    /* max-width: 400px; */
 }
 
 .column-right {
-    flex: 2 1 400px; /* Takes more space, basis allows it to be substantial */
-    min-width: 320px;
+    flex: 2 1 380px; /* Takes more space, basis. Reduced basis from 400px */
+    min-width: 300px; /* Adjusted min-width slightly */
     overflow-x: auto; /* For responsiveness if table is too wide */
 }
 
