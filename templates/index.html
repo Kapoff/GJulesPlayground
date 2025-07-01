@@ -20,11 +20,252 @@
             <li><a href="{{ url_for('track_meal_page') }}" class="button">Track a Meal</a></li>
         </ul>
 
-        <!-- Meal History Section and Modal Removed -->
+        <section id="mealHistorySectionIndex">
+            <h2>Meal History</h2>
+            <ul id="mealHistoryListIndex">
+                <!-- Meal history will be populated here by JavaScript -->
+            </ul>
+            <div id="mealHistoryStatusIndex" class="status-message" style="margin-top:10px;"></div>
+        </section>
 
     </div>
 
+    <!-- Modal for Meal Details on Index Page -->
+    <div id="mealDetailModalIndex" class="modal">
+        <div class="modal-content">
+            <span id="modalCloseBtnIndex" class="modal-close-btn">&times;</span>
+            <h2 id="modalMealNameIndex">Meal Details</h2>
+            <div id="modalMealTimestampIndex" style="font-size: 0.9em; color: #555; margin-bottom: 15px;"></div>
+            <div class="modal-body">
+                <h3>Ingredients Used:</h3>
+                <ul id="modalIngredientsListIndex"></ul>
+                <h3>Total Nutrition:</h3>
+                <ul id="modalTotalNutritionIndex"></ul>
+                <h3>Nutrition per 100g:</h3>
+                <ul id="modalPer100gNutritionIndex"></ul>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // --- START Meal History JS for Index Page ---
+        const mealDetailModalIndex = document.getElementById('mealDetailModalIndex');
+        const modalMealNameIndex = document.getElementById('modalMealNameIndex');
+        const modalMealTimestampIndex = document.getElementById('modalMealTimestampIndex');
+        const modalIngredientsListIndex = document.getElementById('modalIngredientsListIndex');
+        const modalTotalNutritionIndex = document.getElementById('modalTotalNutritionIndex');
+        const modalPer100gNutritionIndex = document.getElementById('modalPer100gNutritionIndex');
+        const modalCloseBtnIndex = document.getElementById('modalCloseBtnIndex');
+
+        if(modalCloseBtnIndex) { // Check if element exists
+            modalCloseBtnIndex.onclick = function() {
+                if(mealDetailModalIndex) mealDetailModalIndex.style.display = "none";
+            }
+        }
+
+        window.addEventListener('click', function(event) {
+            if (event.target == mealDetailModalIndex) {
+                if(mealDetailModalIndex) mealDetailModalIndex.style.display = "none";
+            }
+        });
+
+        function displayMealHistoryIndex(historyItems) {
+            const listElement = document.getElementById('mealHistoryListIndex');
+            const statusElement = document.getElementById('mealHistoryStatusIndex');
+            if (!listElement) return; // Guard against missing element
+            listElement.innerHTML = '';
+
+            if (!historyItems || historyItems.length === 0) {
+                listElement.innerHTML = '<li>No meal history found.</li>';
+                return;
+            }
+
+            historyItems.forEach(meal => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('meal-history-item');
+                listItem.dataset.mealId = meal.id;
+
+                let formattedTimestamp = 'Date unknown';
+                if (meal.timestamp) {
+                    try {
+                        formattedTimestamp = new Date(meal.timestamp).toLocaleDateString(undefined, {
+                            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                        });
+                    } catch (e) { console.warn("Could not parse timestamp:", meal.timestamp); }
+                }
+
+                const mainContent = document.createElement('div');
+                mainContent.classList.add('meal-history-main');
+                mainContent.innerHTML = `
+                    <div class="meal-history-line1">
+                        <strong class="meal-name">${meal.name || 'Unnamed Meal'}</strong>
+                        <span class="meal-timestamp">Saved: ${formattedTimestamp}</span>
+                    </div>
+                    <div class="meal-history-line2 meal-preview">
+                        <span>kcal: ${meal.total_calories ? meal.total_calories.toFixed(0) : 'N/A'}</span>
+                        <span>Prot: ${meal.total_protein_g ? meal.total_protein_g.toFixed(1) : 'N/A'}g</span>
+                        <span>Carb: ${meal.total_carbs_g ? meal.total_carbs_g.toFixed(1) : 'N/A'}g</span>
+                        <span>Fat: ${meal.total_fat_g ? meal.total_fat_g.toFixed(1) : 'N/A'}g</span>
+                    </div>
+                `;
+                listItem.appendChild(mainContent);
+
+                const actionsButton = document.createElement('button');
+                actionsButton.classList.add('meal-actions-btn');
+                actionsButton.innerHTML = '&#8942;';
+                actionsButton.title = 'Meal Actions';
+                actionsButton.onclick = (event) => {
+                    event.stopPropagation();
+                    showMealActionsMenuIndex(event.target, meal.id, meal.name);
+                };
+                listItem.appendChild(actionsButton);
+                listElement.appendChild(listItem);
+            });
+        }
+
+        async function showMealDetailsIndex(mealId) {
+            if (!mealDetailModalIndex) return;
+            try {
+                const response = await fetch(`/api/get_meal_detail/${mealId}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+
+                if (data.success && data.meal) {
+                    const meal = data.meal;
+                    if(modalMealNameIndex) modalMealNameIndex.textContent = meal.name || 'Unnamed Meal';
+                    let ts = 'Date unknown';
+                    if(meal.timestamp) try { ts = new Date(meal.timestamp).toLocaleString(); } catch(e){}
+                    if(modalMealTimestampIndex) modalMealTimestampIndex.textContent = `Saved: ${ts}`;
+                    if(modalIngredientsListIndex) modalIngredientsListIndex.innerHTML = meal.ingredients_used.map(ing => `<li><strong>${ing.name}:</strong> ${ing.weight_g}g</li>`).join('');
+
+                    const tn = meal.total_nutrition;
+                    if(modalTotalNutritionIndex) modalTotalNutritionIndex.innerHTML = `
+                        <li><strong>Total Calories:</strong> ${tn.total_calories !== undefined ? tn.total_calories.toFixed(0) : 'N/A'} kcal</li>
+                        <li><strong>Total Protein:</strong> ${tn.total_protein_g !== undefined ? tn.total_protein_g.toFixed(1) : 'N/A'} g</li>
+                        <li><strong>Total Carbs:</strong> ${tn.total_carbs_g !== undefined ? tn.total_carbs_g.toFixed(1) : 'N/A'} g</li>
+                        <li><strong>Total Fat:</strong> ${tn.total_fat_g !== undefined ? tn.total_fat_g.toFixed(1) : 'N/A'} g</li>
+                        <li><strong>Total Weight:</strong> ${tn.total_weight_g !== undefined ? tn.total_weight_g.toFixed(1) : 'N/A'} g</li>`;
+
+                    const p100 = meal.nutrition_per_100g;
+                    if(modalPer100gNutritionIndex) {
+                        if (p100.calories_per_100g !== null && p100.calories_per_100g !== undefined) {
+                            modalPer100gNutritionIndex.innerHTML = `
+                                <li><strong>Calories:</strong> ${p100.calories_per_100g.toFixed(0)} kcal</li>
+                                <li><strong>Protein:</strong> ${p100.protein_per_100g.toFixed(1)} g</li>
+                                <li><strong>Carbs:</strong> ${p100.carbs_per_100g.toFixed(1)} g</li>
+                                <li><strong>Fat:</strong> ${p100.fat_per_100g.toFixed(1)} g</li>`;
+                        } else {
+                            modalPer100gNutritionIndex.innerHTML = '<li>N/A (meal weight might be zero)</li>';
+                        }
+                    }
+                    mealDetailModalIndex.style.display = "block";
+                } else { alert(data.message || 'Could not fetch meal details.'); }
+            } catch (error) { console.error('Error fetching meal details:', error); alert('Error fetching meal details.'); }
+        }
+
+        function showMealActionsMenuIndex(buttonElement, mealId, mealName) {
+            const existingMenu = document.getElementById('dynamicMealActionsMenuIndex');
+            if (existingMenu) existingMenu.remove();
+
+            const menu = document.createElement('div');
+            menu.id = 'dynamicMealActionsMenuIndex';
+            menu.classList.add('meal-actions-menu');
+
+            const viewBtn = document.createElement('button');
+            viewBtn.textContent = 'View Details';
+            viewBtn.onclick = () => { showMealDetailsIndex(mealId); menu.remove(); };
+            menu.appendChild(viewBtn);
+
+            const reuseBtn = document.createElement('button');
+            reuseBtn.textContent = 'Reuse as Template';
+            reuseBtn.onclick = async () => {
+                menu.remove();
+                try {
+                    const response = await fetch(`/api/get_meal_detail/${mealId}`);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    if (data.success && data.meal) {
+                        const mealToReuse = {
+                            name: data.meal.name,
+                            ingredients: data.meal.ingredients_used.map(ing => ({ name: ing.name, weight: ing.weight_g }))
+                        };
+                        localStorage.setItem('reuseMealTemplate', JSON.stringify(mealToReuse));
+                        window.location.href = "{{ url_for('track_meal_page') }}";
+                    } else { alert(data.message || 'Could not fetch meal details for reuse.'); }
+                } catch (error) { console.error('Error reusing meal:', error); alert('Error preparing meal for reuse.'); }
+            };
+            menu.appendChild(reuseBtn);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete Meal';
+            deleteBtn.classList.add('delete-action');
+            deleteBtn.onclick = async () => {
+                menu.remove();
+                if (confirm(`Are you sure you want to delete the meal "${mealName}"? This action cannot be undone.`)) {
+                    try {
+                        const response = await fetch(`/api/delete_meal/${mealId}`, { method: 'DELETE' });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            alert(result.message || 'Meal deleted successfully.');
+                            fetchMealHistoryIndex();
+                        } else { alert(result.message || 'Failed to delete meal.'); }
+                    } catch (error) { console.error('Error deleting meal:', error); alert('An error occurred.'); }
+                }
+            };
+            menu.appendChild(deleteBtn);
+
+            document.body.appendChild(menu);
+            const btnRect = buttonElement.getBoundingClientRect();
+            menu.style.top = `${btnRect.bottom + window.scrollY}px`;
+            menu.style.left = `${btnRect.left + window.scrollX - menu.offsetWidth + btnRect.width}px`;
+            menu.style.display = 'block';
+
+            const closeMenuHandlerIndex = (event) => {
+                if (!menu.contains(event.target) && event.target !== buttonElement) {
+                    menu.remove();
+                    document.removeEventListener('click', closeMenuHandlerIndex, true);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', closeMenuHandlerIndex, true), 0);
+        }
+
+        async function fetchMealHistoryIndex() {
+            const listElement = document.getElementById('mealHistoryListIndex');
+            const statusElement = document.getElementById('mealHistoryStatusIndex');
+
+            if (listElement) listElement.innerHTML = '<li>Loading meal history...</li>';
+            if (statusElement) {
+                statusElement.textContent = '';
+                statusElement.className = 'status-message';
+            }
+
+            try {
+                const response = await fetch('/api/get_meal_history');
+                if (listElement) listElement.innerHTML = '';
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data.success && data.history && data.history.length > 0) {
+                    displayMealHistoryIndex(data.history);
+                } else if (data.success && (!data.history || data.history.length === 0)) {
+                    if (listElement) listElement.innerHTML = '<li>No meal history found.</li>';
+                } else {
+                    throw new Error(data.message || 'Failed to parse meal history.');
+                }
+            } catch (error) {
+                console.error('Error fetching meal history:', error);
+                if (listElement) listElement.innerHTML = '<li>Error loading meal history. Please try refreshing the page.</li>';
+                if (statusElement) {
+                    statusElement.textContent = `Error: ${error.message}`;
+                    statusElement.className = 'status-message error';
+                }
+            }
+        }
+        // --- END Meal History JS for Index Page ---
+
         // Global Shutdown server button event listener (keep existing)
         const globalShutdownBtn = document.getElementById('globalShutdownBtn');
         if (globalShutdownBtn) {
