@@ -369,6 +369,86 @@ section:last-child {
     font-style: italic;
 }
 
+/* Meal History List Item Enhanced Styling */
+#mealHistoryList li.meal-history-item,
+#mealHistoryListOnTrackPage li.meal-history-item { /* Apply to both pages */
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* Vertically center content and button */
+    padding: 10px 15px; /* Existing padding */
+    border: 1px solid #e0e0e0; /* More prominent cell border */
+    background-color: #fdfdfd; /* Slightly off-white background for cell */
+    margin-bottom: 8px; /* Space between cells */
+    border-radius: 6px; /* Rounded corners for cell */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle shadow */
+}
+
+#mealHistoryList li.meal-history-item .meal-history-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column; /* Stack line1 and line2 */
+    align-items: flex-start;
+    gap: 4px; /* Space between line1 and line2 */
+}
+
+#mealHistoryList li.meal-history-item .meal-history-line1 {
+    display: flex;
+    justify-content: space-between; /* Pushes timestamp to the right of name */
+    width: 100%; /* Take full width of main content area */
+    align-items: baseline; /* Align name and timestamp nicely */
+}
+
+#mealHistoryList li.meal-history-item .meal-name {
+    font-weight: 600;
+    color: #2c3e50; /* Match header blue */
+    font-size: 1.05em; /* Slightly larger */
+}
+
+#mealHistoryList li.meal-history-item .meal-timestamp {
+    font-size: 0.75em; /* Smaller timestamp */
+    color: #888;   /* Lighter color */
+    margin-left: 10px; /* Space from name */
+}
+
+#mealHistoryList li.meal-history-item .meal-history-line2.meal-preview {
+    display: flex; /* Align macros in a row */
+    flex-wrap: wrap; /* Allow wrapping on small screens if needed */
+    gap: 10px; /* Space between macro items */
+    font-size: 0.85em;
+    color: #555;
+    width: 100%; /* Ensure it takes width for alignment */
+}
+#mealHistoryList li.meal-history-item .meal-history-line2.meal-preview span {
+    min-width: 70px; /* Give each macro a min-width for column-like feel */
+    text-align: left;
+}
+
+
+#mealHistoryList li.meal-history-item .meal-actions-btn,
+#mealHistoryListOnTrackPage li.meal-history-item .meal-actions-btn {
+    background: transparent;
+    border: 1px solid transparent; /* Make it take space for alignment */
+    color: #777; /* Slightly darker for better visibility */
+    font-size: 1.2em; /* Smaller ellipsis */
+    padding: 2px 5px; /* Reduce padding */
+    margin-left: 10px; /* Keep some space */
+    cursor: pointer;
+    border-radius: 4px; /* Slight rounding */
+    line-height: 1;
+    height: 28px; /* Match approx height of X button */
+    width: 28px;  /* Match approx width of X button */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#mealHistoryList li.meal-history-item .meal-actions-btn:hover,
+#mealHistoryListOnTrackPage li.meal-history-item .meal-actions-btn:hover {
+    background-color: #e9e9e9; /* Lighter hover */
+    border-color: #ddd;
+    color: #333;
+}
+
+
 /* Modal Styling */
 .modal {
     display: none; /* Hidden by default */

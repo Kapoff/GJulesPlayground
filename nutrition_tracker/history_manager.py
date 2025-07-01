@@ -61,12 +61,15 @@ class MealHistoryManager:
         """
         summaries = []
         for meal in sorted(self.history, key=lambda x: x.get("timestamp", ""), reverse=True):
+            total_nutrition = meal.get("total_nutrition", {})
             summary = {
                 "id": meal.get("id"),
                 "name": meal.get("name"),
                 "timestamp": meal.get("timestamp"),
-                # Extracting total calories for the preview
-                "total_calories": meal.get("total_nutrition", {}).get("total_calories", 0)
+                "total_calories": total_nutrition.get("total_calories", 0),
+                "total_protein_g": total_nutrition.get("total_protein_g", 0),
+                "total_carbs_g": total_nutrition.get("total_carbs_g", 0),
+                "total_fat_g": total_nutrition.get("total_fat_g", 0)
             }
             summaries.append(summary)
         return summaries
