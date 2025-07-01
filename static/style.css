@@ -490,6 +490,9 @@ section:last-child {
 }
 
 /* Styles for Add Ingredient Page Two-Column Layout and Table */
+/* Existing .page-layout, .column-left, .column-right are mostly fine */
+/* We need to style the new #existingIngredientsList and its items */
+
 .page-layout {
     display: flex;
     flex-wrap: wrap; /* Allow wrapping on smaller screens */
@@ -517,64 +520,97 @@ section:last-child {
     text-align: left; /* Align section headers to the left */
 }
 
-
-.ingredients-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0; /* Adjusted as h2 has bottom margin now */
-    font-size: 0.95em; /* Slightly smaller font for table data */
+/* Styling for #existingIngredientsList to mimic #currentMealList */
+#existingIngredientsList {
+    list-style: none;
+    padding: 0;
+    margin-top: 0; /* Align with h2 */
+    margin-bottom: 20px; /* Same as #currentMealList */
+    background-color: #fff; /* Same as #currentMealList */
+    border-radius: 5px; /* Same as #currentMealList */
+    border: 1px solid #eee; /* Same as #currentMealList */
 }
 
-.ingredients-table th, .ingredients-table td {
-    border: 1px solid #e0e0e0; /* Consistent border color */
-    padding: 10px 12px; /* Slightly more padding */
-    text-align: left;
-    vertical-align: middle;
+#existingIngredientsList li.ingredient-item-row,
+#existingIngredientsList li.list-placeholder {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 40px; /* Consistent row height */
+    transition: background-color 0.2s ease;
 }
 
-.ingredients-table th {
-    background-color: #f7f7f7; /* Match other table headers */
-    font-weight: 600; /* Consistent with other th */
-    white-space: nowrap; /* Prevent headers from wrapping */
+#existingIngredientsList li.ingredient-item-row:last-child,
+#existingIngredientsList li.list-placeholder:last-child {
+    border-bottom: none;
 }
 
-.ingredients-table tr:nth-child(even) {
-    background-color: #fdfdfd; /* Consistent with other tables */
-}
-.ingredients-table tr:hover td {
-    background-color: #f1f1f1; /* Hover effect for rows */
+#existingIngredientsList li.ingredient-item-row:hover {
+    background-color: #f9f9f9; /* Hover effect */
 }
 
-.ingredients-table .action-button-placeholder { /* If you use a ... button */
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
+#existingIngredientsList .list-placeholder {
+    justify-content: center;
+    color: #777;
+    font-style: italic;
+}
+#existingIngredientsList .list-placeholder.error-message {
+    color: #e74c3c; /* Red for error messages */
+    font-style: normal;
+    font-weight: 500;
+}
+
+
+.ingredient-item-name-column {
+    flex: 1 1 150px; /* Grow, shrink, basis */
+    min-width: 120px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px; /* Space before macros */
+}
+
+.ingredient-item-macros-column {
+    flex: 2 1 250px; /* Takes more space for macros */
+    min-width: 200px;
+    display: flex;
+    flex-wrap: wrap; /* Allow macros to wrap if needed on small screens */
+    gap: 8px; /* Spacing between macro items */
+    font-size: 0.9em;
+    color: #444;
+}
+.ingredient-item-macros-column span {
+    /* Each span is a macro, e.g., "Cal: XX" */
+    white-space: nowrap; /* Prevent individual macros from wrapping */
+}
+
+.ingredient-item-actions-column {
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-left: auto; /* Pushes button to the right */
+}
+
+/* Styling for the delete button to match .meal-item-remove-btn */
+.ingredient-item-remove-btn {
+    background-color: transparent;
+    color: #e74c3c;
+    border: none;
     border-radius: 4px;
     padding: 5px 8px;
+    font-size: 1.2em; /* Larger X, matches .meal-item-remove-btn */
+    font-weight: bold; /* Matches .meal-item-remove-btn */
     cursor: pointer;
-    font-weight: bold;
-    display: inline-block; /* To allow margin/padding */
-}
-.ingredients-table .action-button-placeholder:hover {
-    background-color: #e0e0e0;
-}
-
-.ingredients-table .delete-button {
-    color: #e74c3c;
-    cursor: pointer;
-    text-decoration: none; /* Remove underline by default */
-    font-weight: 500;
-    /* display: block; */ /* Remove if not needed for dropdown */
-    /* margin-top: 5px; */ /* Remove if not needed for dropdown */
-    padding: 3px 6px;
-    border-radius: 3px;
+    line-height: 1; /* Ensure X is centered well */
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.ingredients-table .delete-button:hover {
-    color: #fff; /* White text on hover */
-    background-color: #c0392b; /* Darker red background on hover */
-    text-decoration: none;
+.ingredient-item-remove-btn:hover {
+    background-color: #fdecea; /* Light red background on hover */
+    color: #c0392b; /* Darker red on hover */
 }
+
 
 .form-group small {
     display: block;

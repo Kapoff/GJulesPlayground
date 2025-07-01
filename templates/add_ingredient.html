@@ -63,24 +63,11 @@
 
             <div class="column-right">
                 <h2>Existing Ingredients</h2>
-                <div id="ingredientsListContainer">
-                    <table class="ingredients-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Calories (per 100g)</th>
-                                <th>Protein (g)</th>
-                                <th>Carbs (g)</th>
-                                <th>Fat (g)</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ingredientsTableBody">
-                            <!-- Ingredient rows will be populated here by JavaScript -->
-                            <tr><td colspan="6" style="text-align:center;">Loading ingredients...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <!-- Container for the list, similar to currentMealList -->
+                <ul id="existingIngredientsList" class="styled-list">
+                    <!-- Ingredient items will be populated here by JavaScript -->
+                    <li class="list-placeholder">Loading ingredients...</li>
+                </ul>
                 <div id="deleteStatusMessage" class="status-message" style="margin-top:15px;"></div>
             </div>
         </div>
@@ -89,13 +76,14 @@
     <script>
         const addIngredientForm = document.getElementById('addIngredientForm');
         const statusMessageEl = document.getElementById('statusMessage');
-        const ingredientsTableBody = document.getElementById('ingredientsTableBody');
+        // const ingredientsTableBody = document.getElementById('ingredientsTableBody'); // No longer a table body
+        const existingIngredientsList = document.getElementById('existingIngredientsList');
         const deleteStatusMessageEl = document.getElementById('deleteStatusMessage');
         const globalShutdownBtn = document.getElementById('globalShutdownBtn');
 
         // Fetch and display existing ingredients
         async function fetchAndDisplayIngredients() {
-            ingredientsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Loading ingredients...</td></tr>';
+            existingIngredientsList.innerHTML = '<li class="list-placeholder">Loading ingredients...</li>';
             deleteStatusMessageEl.textContent = '';
             deleteStatusMessageEl.className = 'status-message';
 
@@ -105,44 +93,56 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const ingredients = await response.json();
-                renderIngredientsTable(ingredients);
+                renderIngredientsList(ingredients); // Changed function name
             } catch (error) {
                 console.error('Error fetching ingredients:', error);
-                ingredientsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: red;">Error loading ingredients.</td></tr>';
+                existingIngredientsList.innerHTML = '<li class="list-placeholder error-message">Error loading ingredients.</li>';
             }
         }
 
-        function renderIngredientsTable(ingredients) {
-            ingredientsTableBody.innerHTML = ''; // Clear existing rows
+        function renderIngredientsList(ingredients) { // Changed function name
+            existingIngredientsList.innerHTML = ''; // Clear existing items
 
             if (ingredients.length === 0) {
-                ingredientsTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No ingredients found in the database.</td></tr>';
+                existingIngredientsList.innerHTML = '<li class="list-placeholder">No ingredients found in the database.</li>';
                 return;
             }
 
             ingredients.forEach(ing => {
-                const row = ingredientsTableBody.insertRow();
-                row.insertCell().textContent = ing.name;
-                // Values are already per 100g from Ingredient.to_dict()
-                row.insertCell().textContent = ing.calories.toFixed(1);
-                row.insertCell().textContent = ing.protein.toFixed(1);
-                row.insertCell().textContent = ing.carbs.toFixed(1);
-                row.insertCell().textContent = ing.fat.toFixed(1);
+                const listItem = document.createElement('li');
+                listItem.classList.add('ingredient-item-row'); // New class for styling, similar to meal-item-row
 
-                const actionsCell = row.insertCell();
-                // For now, "..." button is conceptual, direct delete link/button
-                // const actionButton = document.createElement('button');
-                // actionButton.classList.add('action-button');
-                // actionButton.textContent = '...';
-                // actionsCell.appendChild(actionButton);
+                // Ingredient Name
+                const nameDiv = document.createElement('div');
+                nameDiv.classList.add('ingredient-item-name-column'); // For specific styling of the name part
+                nameDiv.textContent = ing.name;
+                nameDiv.title = ing.name; // Tooltip for long names
+                listItem.appendChild(nameDiv);
 
-                // Add delete link/button
-                const deleteLink = document.createElement('span');
-                deleteLink.textContent = 'Delete';
-                deleteLink.classList.add('delete-button'); // For styling
-                deleteLink.style.cursor = 'pointer';
-                deleteLink.onclick = () => handleDeleteIngredient(ing.name);
-                actionsCell.appendChild(deleteLink);
+                // Nutritional Info (as a single block or multiple spans)
+                const macrosDiv = document.createElement('div');
+                macrosDiv.classList.add('ingredient-item-macros-column'); // For styling the macros part
+                macrosDiv.innerHTML = `
+                    <span>Cal: ${ing.calories.toFixed(1)}</span>
+                    <span>P: ${ing.protein.toFixed(1)}g</span>
+                    <span>C: ${ing.carbs.toFixed(1)}g</span>
+                    <span>F: ${ing.fat.toFixed(1)}g</span>
+                `;
+                listItem.appendChild(macrosDiv);
+
+                // Actions
+                const actionsDiv = document.createElement('div');
+                actionsDiv.classList.add('ingredient-item-actions-column');
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('ingredient-item-remove-btn'); // New class, to be styled like meal-item-remove-btn
+                deleteBtn.innerHTML = '&times;'; // 'X' symbol
+                deleteBtn.title = `Delete ${ing.name}`;
+                deleteBtn.onclick = () => handleDeleteIngredient(ing.name);
+                actionsDiv.appendChild(deleteBtn);
+                listItem.appendChild(actionsDiv);
+
+                existingIngredientsList.appendChild(listItem);
             });
         }
 
