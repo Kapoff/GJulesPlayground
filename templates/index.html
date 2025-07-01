@@ -254,22 +254,31 @@
         }
 
         async function fetchMealHistory() {
+            const listElement = document.getElementById('mealHistoryList');
             const statusElement = document.getElementById('mealHistoryStatus');
+
+            listElement.innerHTML = '<li>Loading meal history...</li>'; // Set loading message initially
+            statusElement.textContent = ''; // Clear previous status
+            statusElement.className = 'status-message'; // Reset class
+
             try {
                 const response = await fetch('/api/get_meal_history');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
+                listElement.innerHTML = ''; // Clear "Loading..." before populating or showing "No history"
+
                 if (data.success && data.history) {
-                    displayMealHistory(data.history);
-                    statusElement.textContent = '';
+                    displayMealHistory(data.history); // displayMealHistory itself handles empty list by showing "No meal history"
+                } else if (data.success && (!data.history || data.history.length === 0)) {
+                    listElement.innerHTML = '<li>No meal history found.</li>';
                 } else {
                     throw new Error(data.message || 'Failed to parse meal history.');
                 }
             } catch (error) {
                 console.error('Error fetching meal history:', error);
-                document.getElementById('mealHistoryList').innerHTML = '<li>Error loading meal history.</li>';
+                listElement.innerHTML = '<li>Error loading meal history. Please try refreshing the page.</li>';
                 statusElement.textContent = `Error: ${error.message}`;
                 statusElement.className = 'status-message error';
             }

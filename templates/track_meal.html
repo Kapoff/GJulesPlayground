@@ -52,7 +52,7 @@
                 <input type="checkbox" id="saveMealToHistoryCheckbox" name="saveMealToHistoryCheckbox" checked style="width: auto; margin-right: 10px;">
                 <label for="saveMealToHistoryCheckbox" style="margin-bottom: 0; font-weight: normal;">Save this meal to history</label>
             </div>
-            <button id="calculateNutritionBtn" class="button primary-action" disabled>Calculate Nutrition</button>
+            <button id="saveAndLogMealBtn" class="button primary-action" disabled>Save and Log Meal</button>
         </section>
 
         <section id="nutritionResultsSection" style="display:none;">
@@ -120,7 +120,7 @@
         const ingredientWeightInput = document.getElementById('ingredientWeight');
         const addIngredientToMealBtn = document.getElementById('addIngredientToMealBtn');
         const currentMealList = document.getElementById('currentMealList');
-        const calculateNutritionBtn = document.getElementById('calculateNutritionBtn');
+        const saveAndLogMealBtn = document.getElementById('saveAndLogMealBtn'); // Renamed variable
         const nutritionResultsSection = document.getElementById('nutritionResultsSection');
         const resultMealName = document.getElementById('resultMealName');
         const totalNutritionTableBody = document.getElementById('totalNutritionTable').getElementsByTagName('tbody')[0];
@@ -213,8 +213,9 @@
                 currentMeal.push(newItem);
 
                 renderCurrentMeal(); // This will now display the item with its calculated macros
+                updateClientSideTotalPreview(); // Update total preview
                 ingredientWeightInput.value = ''; // Clear weight input
-                calculateNutritionBtn.disabled = false;
+                saveAndLogMealBtn.disabled = false; // Use renamed variable
                 mealIngredientStatus.textContent = `${ingredientName} added to meal.`;
                 mealIngredientStatus.className = 'status-message success';
                  setTimeout(() => { mealIngredientStatus.textContent = ''; mealIngredientStatus.className = 'status-message';}, 3000);
@@ -230,7 +231,7 @@
                 const li = document.createElement('li');
                 li.textContent = 'No ingredients added yet.';
                 currentMealList.appendChild(li);
-                calculateNutritionBtn.disabled = true;
+                saveAndLogMealBtn.disabled = true; // Use renamed variable
                 return;
             }
             currentMeal.forEach((item, index) => {
@@ -300,7 +301,7 @@
                 removeBtn.onclick = () => {
                     currentMeal.splice(index, 1);
                     renderCurrentMeal();
-                    if (currentMeal.length === 0) calculateNutritionBtn.disabled = true;
+                    if (currentMeal.length === 0) saveAndLogMealBtn.disabled = true; // Use renamed variable
                      // If nutrition results are visible, prompt for recalculation
                     if (nutritionResultsSection.style.display !== 'none') {
                         nutritionStatus.textContent = 'Meal composition changed (item removed). Please recalculate.';
@@ -309,6 +310,7 @@
                         // totalNutritionTableBody.innerHTML = '';
                         // per100gNutritionTableBody.innerHTML = '';
                     }
+                    updateClientSideTotalPreview(); // Update total preview after removing an item
                 };
                 li.appendChild(removeBtn);
                 currentMealList.appendChild(li);
@@ -337,9 +339,11 @@
                     nutritionStatus.textContent = 'Meal composition changed. Please recalculate overall totals.';
                     nutritionStatus.className = 'status-message info';
                     // Clear overall totals tables as they are definitely outdated
-                    totalNutritionTableBody.innerHTML = '<tr><td colspan="2"><em>Totals outdated due to weight change. Recalculate meal.</em></td></tr>';
-                    per100gNutritionTableBody.innerHTML = '<tr><td colspan="2"><em>Totals outdated due to weight change. Recalculate meal.</em></td></tr>';
+                    // totalNutritionTableBody.innerHTML = '<tr><td colspan="2"><em>Totals outdated due to weight change. Recalculate meal.</em></td></tr>';
+                    // per100gNutritionTableBody.innerHTML = '<tr><td colspan="2"><em>Totals outdated due to weight change. Recalculate meal.</em></td></tr>';
+                    // Instead of clearing, let's just update the preview
                 }
+                updateClientSideTotalPreview(); // Update total preview after weight change
             } else {
                 event.target.value = currentMeal[index].weight; // Reset to old value if input is invalid
                 mealIngredientStatus.textContent = 'Invalid weight. Please enter a positive number.';
@@ -349,7 +353,7 @@
         }
 
         // Update this function to work with the new flat structure within the li
-        function updateMacrosDisplay(listItem, macros) {
+        function updateMacrosDisplay(listItem, macros) { // listItem is the <li> element
             const kcalSpan = listItem.querySelector('.macro-kcal');
             const protSpan = listItem.querySelector('.macro-prot');
             const carbSpan = listItem.querySelector('.macro-carb');
@@ -369,10 +373,87 @@
             }
         }
 
-
-        calculateNutritionBtn.addEventListener('click', async () => {
+        function updateClientSideTotalPreview() {
             if (currentMeal.length === 0) {
-                nutritionStatus.textContent = 'Cannot calculate nutrition for an empty meal.';
+                nutritionResultsSection.style.display = 'none';
+                totalNutritionTableBody.innerHTML = '';
+                per100gNutritionTableBody.innerHTML = '';
+                if (resultMealName) resultMealName.textContent = mealNameInput.value || 'Your Meal';
+                if (nutritionStatus) nutritionStatus.textContent = 'Add ingredients to see totals.';
+                return;
+            }
+
+            let totalWeight = 0;
+            let totalCalories = 0;
+            let totalProtein = 0;
+            let totalCarbs = 0;
+            let totalFat = 0;
+
+            currentMeal.forEach(item => {
+                if (item.calculatedMacros && typeof item.weight === 'number') {
+                    totalWeight += item.weight;
+                    totalCalories += item.calculatedMacros.calories;
+                    totalProtein += item.calculatedMacros.protein_g;
+                    totalCarbs += item.calculatedMacros.carbs_g;
+                    totalFat += item.calculatedMacros.fat_g;
+                }
+            });
+
+            const previewTotalNutrition = {
+                total_weight_g: totalWeight,
+                total_calories: totalCalories,
+                total_protein_g: totalProtein,
+                total_carbs_g: totalCarbs,
+                total_fat_g: totalFat
+            };
+
+            let previewPer100g = { calories_per_100g: null, protein_per_100g: null, carbs_per_100g: null, fat_per_100g: null };
+            if (totalWeight > 0) {
+                const factor = 100.0 / totalWeight;
+                previewPer100g = {
+                    calories_per_100g: totalCalories * factor,
+                    protein_per_100g: totalProtein * factor,
+                    carbs_per_100g: totalCarbs * factor,
+                    fat_per_100g: totalFat * factor
+                };
+            }
+
+            // Use the existing displayNutritionResults structure but with client data
+            // Or simplify by directly updating the table (populateTable function is generic)
+            if (resultMealName) resultMealName.textContent = mealNameInput.value || 'Your Meal (Preview)';
+
+            totalNutritionTableBody.innerHTML = ''; // Clear previous results
+            populateTable(totalNutritionTableBody, [
+                { nutrient: 'Total Weight', amount: `${previewTotalNutrition.total_weight_g.toFixed(1)}g` },
+                { nutrient: 'Total Calories', amount: `${previewTotalNutrition.total_calories.toFixed(1)} kcal` },
+                { nutrient: 'Total Protein', amount: `${previewTotalNutrition.total_protein_g.toFixed(1)}g` },
+                { nutrient: 'Total Carbs', amount: `${previewTotalNutrition.total_carbs_g.toFixed(1)}g` },
+                { nutrient: 'Total Fat', amount: `${previewTotalNutrition.total_fat_g.toFixed(1)}g` }
+            ]);
+
+            per100gNutritionTableBody.innerHTML = ''; // Clear previous results
+            if (previewPer100g.calories_per_100g !== null) {
+                populateTable(per100gNutritionTableBody, [
+                    { nutrient: 'Calories per 100g', amount: `${previewPer100g.calories_per_100g.toFixed(1)} kcal` },
+                    { nutrient: 'Protein per 100g', amount: `${previewPer100g.protein_per_100g.toFixed(1)}g` },
+                    { nutrient: 'Carbs per 100g', amount: `${previewPer100g.carbs_per_100g.toFixed(1)}g` },
+                    { nutrient: 'Fat per 100g', amount: `${previewPer100g.fat_per_100g.toFixed(1)}g` }
+                ]);
+            } else {
+                 const row = per100gNutritionTableBody.insertRow();
+                 const cell = row.insertCell();
+                 cell.colSpan = 2;
+                 cell.textContent = 'N/A (meal weight is zero)';
+            }
+            nutritionResultsSection.style.display = 'block';
+            if (nutritionStatus) nutritionStatus.textContent = 'Live Preview - Recalculate with button to save.';
+            if (nutritionStatus) nutritionStatus.className = 'status-message info';
+        }
+
+
+        saveAndLogMealBtn.addEventListener('click', async () => { // Use renamed variable
+            if (currentMeal.length === 0) {
+                nutritionStatus.textContent = 'Cannot save an empty meal.'; // Adjusted message
                 nutritionStatus.className = 'status-message error';
                 nutritionResultsSection.style.display = 'block';
                 return;
@@ -507,7 +588,7 @@
                         });
                     }
                     renderCurrentMeal(); // Display the reused meal
-                    if(currentMeal.length > 0) calculateNutritionBtn.disabled = false;
+                    if(currentMeal.length > 0) saveAndLogMealBtn.disabled = false; // Use renamed variable
 
                 } catch (error) {
                     console.error("Error processing reused meal data:", error);
@@ -685,7 +766,8 @@
                             });
                         }
                         renderCurrentMeal();
-                        if(currentMeal.length > 0) calculateNutritionBtn.disabled = false;
+                        updateClientSideTotalPreview(); // Also update preview when reusing
+                        if(currentMeal.length > 0) saveAndLogMealBtn.disabled = false; // Use renamed variable
                         // Scroll to top of meal composition section might be nice
                         document.getElementById('mealCompositionSection').scrollIntoView({ behavior: 'smooth' });
                     } else { alert(data.message || 'Could not fetch meal details for reuse.'); }
