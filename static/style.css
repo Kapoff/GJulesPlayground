@@ -18,9 +18,9 @@ body {
 }
 
 .container {
-    width: 100%;
-    max-width: 800px; /* Slightly wider for more complex layouts */
-    margin: 20px auto; /* Add some margin top/bottom */
+    width: 90%; /* Use percentage for fluidity */
+    max-width: 1200px; /* Increase max-width for wider screens */
+    margin: 20px auto;
     background: #ffffff;
     padding: 25px 30px; /* More padding */
     border-radius: 10px;
@@ -725,6 +725,9 @@ section:last-child {
 }
 
 /* Styles for Add Ingredient Page Two-Column Layout and Table */
+/* Existing .page-layout, .column-left, .column-right are mostly fine */
+/* We need to style the new #existingIngredientsList and its items */
+
 .page-layout {
     display: flex;
     flex-wrap: wrap; /* Allow wrapping on smaller screens */
@@ -732,14 +735,14 @@ section:last-child {
 }
 
 .column-left {
-    flex: 1 1 350px; /* Flex grow, shrink, basis */
-    min-width: 300px; /* Minimum width before wrapping or squishing too much */
-    /* max-width: 400px; /* Max width for the form - can be removed if flex-basis is good */
+    flex: 1 1 300px; /* Flex grow, shrink, basis. Reduced basis from 350px */
+    min-width: 280px; /* Adjusted min-width slightly */
+    /* max-width: 400px; */
 }
 
 .column-right {
-    flex: 2 1 400px; /* Takes more space, basis allows it to be substantial */
-    min-width: 320px;
+    flex: 2 1 380px; /* Takes more space, basis. Reduced basis from 400px */
+    min-width: 300px; /* Adjusted min-width slightly */
     overflow-x: auto; /* For responsiveness if table is too wide */
 }
 
@@ -752,64 +755,159 @@ section:last-child {
     text-align: left; /* Align section headers to the left */
 }
 
-
-.ingredients-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 0; /* Adjusted as h2 has bottom margin now */
-    font-size: 0.95em; /* Slightly smaller font for table data */
+/* Styling for #existingIngredientsList to mimic #currentMealList */
+#existingIngredientsList {
+    list-style: none;
+    padding: 0;
+    margin-top: 0; /* Align with h2 */
+    margin-bottom: 20px; /* Same as #currentMealList */
+    background-color: #fff; /* Same as #currentMealList */
+    border-radius: 5px; /* Same as #currentMealList */
+    border: 1px solid #eee; /* Same as #currentMealList */
 }
 
-.ingredients-table th, .ingredients-table td {
-    border: 1px solid #e0e0e0; /* Consistent border color */
-    padding: 10px 12px; /* Slightly more padding */
-    text-align: left;
-    vertical-align: middle;
+#existingIngredientsList li.ingredient-item-row,
+#existingIngredientsList li.list-placeholder {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 40px; /* Consistent row height */
+    transition: background-color 0.2s ease;
 }
 
-.ingredients-table th {
-    background-color: #f7f7f7; /* Match other table headers */
-    font-weight: 600; /* Consistent with other th */
-    white-space: nowrap; /* Prevent headers from wrapping */
+#existingIngredientsList li.ingredient-item-row:last-child,
+#existingIngredientsList li.list-placeholder:last-child {
+    border-bottom: none;
 }
 
-.ingredients-table tr:nth-child(even) {
-    background-color: #fdfdfd; /* Consistent with other tables */
-}
-.ingredients-table tr:hover td {
-    background-color: #f1f1f1; /* Hover effect for rows */
+#existingIngredientsList li.ingredient-item-row:hover {
+    background-color: #f9f9f9; /* Hover effect */
 }
 
-.ingredients-table .action-button-placeholder { /* If you use a ... button */
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
+#existingIngredientsList .list-placeholder {
+    justify-content: center;
+    color: #777;
+    font-style: italic;
+}
+#existingIngredientsList .list-placeholder.error-message {
+    color: #e74c3c; /* Red for error messages */
+    font-style: normal;
+    font-weight: 500;
+}
+
+
+.ingredient-item-name-column {
+    flex: 1 1 150px; /* Grow, shrink, basis */
+    min-width: 120px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 10px; /* Space before macros */
+}
+
+.ingredient-item-macros-column {
+    flex: 3 1 300px; /* Increased basis and flex-grow to give more space */
+    min-width: 280px; /* Increased min-width */
+    display: flex;
+    /* flex-wrap: wrap; */ /* Remove wrap to keep them on one line if possible */
+    justify-content: flex-start; /* Align items to the start */
+    gap: 12px; /* Increased gap for better separation */
+    font-size: 0.9em;
+    color: #444;
+    white-space: nowrap; /* Apply to the container to suggest no wrapping for its children */
+    overflow: hidden; /* Hide overflow if it still happens, though ideally it fits */
+    text-overflow: ellipsis; /* Show ellipsis if container overflows */
+}
+.ingredient-item-macros-column span {
+    /* Each span is a macro, e.g., "Cal: XX" */
+    /* white-space: nowrap; */ /* No longer needed here if parent has it and we want overflow on parent */
+    display: inline-block; /* Helps with potential spacing or alignment issues */
+}
+
+.ingredient-item-actions-column {
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-left: auto; /* Pushes button to the right */
+}
+
+/* Styling for the delete button to match .meal-item-remove-btn */
+.ingredient-item-remove-btn {
+    background-color: transparent;
+    color: #e74c3c;
+    border: none;
     border-radius: 4px;
     padding: 5px 8px;
+    font-size: 1.2em; /* Larger X, matches .meal-item-remove-btn */
+    font-weight: bold; /* Matches .meal-item-remove-btn */
     cursor: pointer;
-    font-weight: bold;
-    display: inline-block; /* To allow margin/padding */
-}
-.ingredients-table .action-button-placeholder:hover {
-    background-color: #e0e0e0;
-}
-
-.ingredients-table .delete-button {
-    color: #e74c3c;
-    cursor: pointer;
-    text-decoration: none; /* Remove underline by default */
-    font-weight: 500;
-    /* display: block; */ /* Remove if not needed for dropdown */
-    /* margin-top: 5px; */ /* Remove if not needed for dropdown */
-    padding: 3px 6px;
-    border-radius: 3px;
+    line-height: 1; /* Ensure X is centered well */
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.ingredients-table .delete-button:hover {
-    color: #fff; /* White text on hover */
-    background-color: #c0392b; /* Darker red background on hover */
-    text-decoration: none;
+.ingredient-item-remove-btn:hover {
+    background-color: #fdecea; /* Light red background on hover */
+    color: #c0392b; /* Darker red on hover */
 }
+
+/* Styles for ... action menu */
+.action-menu-container {
+    position: relative; /* For absolute positioning of the menu */
+    display: inline-block; /* Or flex, depending on how it sits in actions-column */
+}
+
+.ellipsis-button {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 2px 8px; /* Small padding */
+    font-size: 1.1em; /* Make ellipsis slightly larger if needed */
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    color: #555;
+}
+.ellipsis-button:hover {
+    background-color: #f0f0f0;
+    border-color: #bbb;
+}
+.ellipsis-button:focus {
+    outline: 1px solid #3498db; /* Focus ring */
+}
+
+.action-menu {
+    display: none; /* Hidden by default, shown by JS */
+    position: absolute;
+    right: 0; /* Align to the right of the button */
+    top: 100%; /* Position below the button */
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 10; /* Ensure it's above other row content */
+    min-width: 100px; /* Minimum width for the menu */
+    padding: 5px 0; /* Padding for the ul */
+}
+.action-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.action-menu ul li {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+.action-menu ul li:hover {
+    background-color: #f0f0f0;
+}
+.action-menu ul li[data-action="delete"]:hover {
+    background-color: #f8d7da; /* Light red for delete hover */
+    color: #721c24;
+}
+
 
 .form-group small {
     display: block;
